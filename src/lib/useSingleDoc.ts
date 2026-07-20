@@ -16,6 +16,8 @@ export interface SingleDocState {
   done: { filename: string; size: number } | null;
   pick: () => Promise<void>;
   run: (fn: (bytes: Uint8Array) => Promise<{ bytes: Uint8Array; filename: string }>) => Promise<void>;
+  /** Re-open the share sheet for the last result (success-card action). */
+  shareAgain: () => Promise<void>;
   reset: () => void;
 }
 
@@ -36,6 +38,8 @@ export function useSingleDoc(): SingleDocState {
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [done, setDone] = React.useState<{ filename: string; size: number } | null>(null);
+  // Kept out of state: only needed for the share-again action, never rendered.
+  const resultRef = React.useRef<{ bytes: Uint8Array; filename: string } | null>(null);
 
   const pick = React.useCallback(async () => {
     setError(null);
@@ -66,6 +70,7 @@ export function useSingleDoc(): SingleDocState {
       setDone(null);
       try {
         const out = await fn(bytes.slice());
+        resultRef.current = out;
         setDone({ filename: out.filename, size: out.bytes.byteLength });
         await shareResult(out.bytes, out.filename);
       } catch (e) {
@@ -77,13 +82,19 @@ export function useSingleDoc(): SingleDocState {
     [bytes],
   );
 
+  const shareAgain = React.useCallback(async () => {
+    const r = resultRef.current;
+    if (r) await shareResult(r.bytes, r.filename);
+  }, []);
+
   const reset = React.useCallback(() => {
     setFile(null);
     setBytes(null);
     setPageCount(0);
     setError(null);
     setDone(null);
+    resultRef.current = null;
   }, []);
 
-  return { file, bytes, pageCount, busy, error, done, pick, run, reset };
+  return { file, bytes, pageCount, busy, error, done, pick, run, shareAgain, reset };
 }

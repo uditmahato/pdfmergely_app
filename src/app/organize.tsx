@@ -1,6 +1,7 @@
 import * as React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { SingleDocShell } from '@/components/SingleDocShell';
+import { IconButton } from '@/components/ui';
 import { organize, type PageOp } from '@/core/engine/organize';
 import { useSingleDoc } from '@/lib/useSingleDoc';
 import { palette } from '@/lib/brand';
@@ -57,24 +58,16 @@ export default function OrganizeScreen() {
               Page {r.index + 1}
               {r.rotation ? `  ·  ${r.rotation}°` : ''}
             </Text>
-            <Pressable onPress={() => move(pos, -1)} style={styles.iconBtn} disabled={doc.busy}>
-              <Text style={styles.icon}>↑</Text>
-            </Pressable>
-            <Pressable onPress={() => move(pos, 1)} style={styles.iconBtn} disabled={doc.busy}>
-              <Text style={styles.icon}>↓</Text>
-            </Pressable>
-            <Pressable onPress={() => rotate(pos)} style={styles.iconBtn} disabled={doc.busy}>
-              <Text style={styles.icon}>⟳</Text>
-            </Pressable>
-            <Pressable onPress={() => remove(pos)} style={styles.iconBtn} disabled={doc.busy}>
-              <Text style={[styles.icon, styles.danger]}>✕</Text>
-            </Pressable>
+            <IconButton icon="chevron-up" label="Move up" onPress={() => move(pos, -1)} disabled={doc.busy} />
+            <IconButton icon="chevron-down" label="Move down" onPress={() => move(pos, 1)} disabled={doc.busy} />
+            <IconButton icon="refresh" label="Rotate 90 degrees" onPress={() => rotate(pos)} disabled={doc.busy} />
+            <IconButton icon="close" label="Remove page" tint={palette.danger} onPress={() => remove(pos)} disabled={doc.busy} />
           </View>
         ))}
       </View>
       <Text style={styles.hint}>
-        Reorder with ↑↓, tap ⟳ to rotate a page by 90°, ✕ to remove it. Page previews arrive in a
-        later update.
+        Reorder with the arrows, rotate a page by 90° with the circular arrow, or remove it with
+        the cross. Page previews arrive in a later update.
       </Text>
     </SingleDocShell>
   );
@@ -94,15 +87,5 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   rowLabel: { flex: 1, color: palette.foreground, fontSize: 14, fontWeight: '600' },
-  iconBtn: {
-    height: 38,
-    width: 38,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: palette.surface2,
-  },
-  icon: { color: palette.foreground, fontSize: 15 },
-  danger: { color: palette.danger },
   hint: { color: palette.muted, fontSize: 12, lineHeight: 18 },
 });

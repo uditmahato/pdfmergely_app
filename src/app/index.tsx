@@ -1,69 +1,77 @@
-import { Link } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { palette } from '@/lib/brand';
+
+type IconName = keyof typeof Ionicons.glyphMap;
 
 interface ToolEntry {
   slug: string;
   name: string;
   tagline: string;
-  available: boolean;
+  icon: IconName;
+  tint: string;
 }
 
 // Pure-JS (pdf-lib) tools, all sharing the web app's vendored engine. The
 // canvas/WASM tools (OCR, scan, compress-to-size, previews) need native
 // modules and arrive in later phases.
 const TOOLS: ToolEntry[] = [
-  { slug: 'merge', name: 'Merge PDF', tagline: 'Combine PDFs in the order you want', available: true },
-  { slug: 'split', name: 'Split PDF', tagline: 'Extract page ranges into new files', available: true },
-  { slug: 'organize', name: 'Organize PDF', tagline: 'Reorder, rotate and delete pages', available: true },
-  { slug: 'watermark', name: 'Watermark PDF', tagline: 'Stamp text on every page', available: true },
-  { slug: 'page-numbers', name: 'Page Numbers', tagline: 'Number your pages', available: true },
-  { slug: 'protect', name: 'Protect PDF', tagline: 'Password-protect a PDF', available: true },
-  { slug: 'unlock', name: 'Unlock PDF', tagline: 'Remove a known password', available: true },
-  { slug: 'metadata', name: 'Remove Metadata', tagline: 'Strip author, dates and hidden data', available: true },
+  { slug: 'merge', name: 'Merge', tagline: 'Combine PDFs into one', icon: 'git-merge', tint: '#34d399' },
+  { slug: 'split', name: 'Split', tagline: 'Ranges into new files', icon: 'cut', tint: '#38bdf8' },
+  { slug: 'organize', name: 'Organize', tagline: 'Reorder, rotate, delete', icon: 'swap-vertical', tint: '#a78bfa' },
+  { slug: 'watermark', name: 'Watermark', tagline: 'Stamp every page', icon: 'water', tint: '#22d3ee' },
+  { slug: 'page-numbers', name: 'Page numbers', tagline: 'Number your pages', icon: 'list', tint: '#fbbf24' },
+  { slug: 'protect', name: 'Protect', tagline: 'Add a password', icon: 'lock-closed', tint: '#f472b6' },
+  { slug: 'unlock', name: 'Unlock', tagline: 'Remove a password', icon: 'lock-open', tint: '#4ade80' },
+  { slug: 'metadata', name: 'Metadata', tagline: 'Strip hidden data', icon: 'eye-off', tint: '#fb923c' },
 ];
 
 export default function Home() {
+  const insets = useSafeAreaInsets();
+  const router = useRouter();
   return (
     <FlatList
       style={styles.list}
-      contentContainerStyle={styles.content}
+      contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 24 }]}
       data={TOOLS}
+      numColumns={2}
+      columnWrapperStyle={styles.column}
       keyExtractor={(t) => t.slug}
       ListHeaderComponent={
         <View style={styles.hero}>
+          <View style={styles.privacyChip}>
+            <Ionicons name="shield-checkmark" size={14} color={palette.brand} />
+            <Text style={styles.privacyText}>Files never leave your phone</Text>
+          </View>
           <Text style={styles.h1}>
-            PDF tools that respect your <Text style={styles.h1Brand}>privacy</Text>
-          </Text>
-          <Text style={styles.sub}>
-            Files are processed on this device and never uploaded. There is no server involved at
-            all.
+            Private PDF tools,{'\n'}right on your <Text style={styles.h1Brand}>device</Text>
           </Text>
         </View>
       }
-      renderItem={({ item }) =>
-        item.available ? (
-          <Link href={`/${item.slug}` as never} asChild>
-            <Pressable style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}>
-              <View style={styles.cardBody}>
-                <Text style={styles.cardTitle}>{item.name}</Text>
-                <Text style={styles.cardTagline}>{item.tagline}</Text>
-              </View>
-              <Text style={styles.chev}>›</Text>
-            </Pressable>
-          </Link>
-        ) : (
-          <View style={[styles.card, styles.cardDisabled]}>
-            <View style={styles.cardBody}>
-              <Text style={[styles.cardTitle, styles.titleDisabled]}>{item.name}</Text>
-              <Text style={styles.cardTagline}>{item.tagline}</Text>
-            </View>
-            <Text style={styles.soon}>Soon</Text>
+      renderItem={({ item }) => (
+        // Plain Pressable + router.push instead of <Link asChild>: asChild's
+        // prop-cloning drops Pressable's function-form style, which silently
+        // stripped the card background/border on device.
+        <Pressable
+          onPress={() => router.push(`/${item.slug}` as never)}
+          style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+        >
+          <View style={[styles.iconTile, { backgroundColor: `${item.tint}1f` }]}>
+            <Ionicons name={item.icon} size={24} color={item.tint} />
           </View>
-        )
-      }
+          <Text style={styles.cardTitle}>{item.name}</Text>
+          <Text style={styles.cardTagline} numberOfLines={2}>
+            {item.tagline}
+          </Text>
+        </Pressable>
+      )}
       ListFooterComponent={
-        <Text style={styles.footer}>Same engine as pdfmergely.com · Works offline · Free</Text>
+        <View style={styles.footer}>
+          <Ionicons name="cloud-offline-outline" size={14} color={palette.muted} />
+          <Text style={styles.footerText}>Works offline · No sign-up · Free</Text>
+        </View>
       }
     />
   );
@@ -71,38 +79,51 @@ export default function Home() {
 
 const styles = StyleSheet.create({
   list: { backgroundColor: palette.bg },
-  content: { padding: 16, gap: 10 },
-  hero: { paddingVertical: 18, gap: 8 },
-  h1: { color: palette.foreground, fontSize: 26, fontWeight: '800', lineHeight: 32 },
-  h1Brand: { color: palette.brand },
-  sub: { color: palette.muted, fontSize: 14, lineHeight: 20 },
-  card: {
+  content: { padding: 16 },
+  column: { gap: 12 },
+  hero: { paddingTop: 8, paddingBottom: 20, gap: 12 },
+  privacyChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: palette.surface,
-    borderColor: palette.border,
-    borderWidth: 1,
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
-  cardPressed: { backgroundColor: palette.surface2 },
-  cardDisabled: { opacity: 0.55 },
-  cardBody: { flex: 1, gap: 2 },
-  cardTitle: { color: palette.foreground, fontSize: 16, fontWeight: '700' },
-  titleDisabled: { color: palette.muted },
-  cardTagline: { color: palette.muted, fontSize: 13 },
-  chev: { color: palette.brand, fontSize: 24, fontWeight: '600' },
-  soon: {
-    color: palette.muted,
-    fontSize: 11,
-    fontWeight: '700',
-    borderColor: palette.border,
-    borderWidth: 1,
+    gap: 6,
+    alignSelf: 'flex-start',
+    backgroundColor: palette.brandSoft,
     borderRadius: 999,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    overflow: 'hidden',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
-  footer: { color: palette.muted, fontSize: 12, textAlign: 'center', paddingVertical: 18 },
+  privacyText: { color: palette.brand, fontSize: 12, fontWeight: '700' },
+  h1: { color: palette.foreground, fontSize: 28, fontWeight: '800', lineHeight: 34 },
+  h1Brand: { color: palette.brand },
+  card: {
+    flex: 1,
+    // surface2 + a visible border: plain `surface` is only ~3% lighter than
+    // the page background and disappears entirely on real phone panels.
+    backgroundColor: palette.surface2,
+    borderColor: 'hsl(222, 26%, 24%)',
+    borderWidth: 1,
+    borderRadius: 20,
+    padding: 16,
+    gap: 8,
+    marginBottom: 12,
+    minHeight: 128,
+  },
+  cardPressed: { backgroundColor: palette.surface2, transform: [{ scale: 0.98 }] },
+  iconTile: {
+    height: 44,
+    width: 44,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardTitle: { color: palette.foreground, fontSize: 16, fontWeight: '700' },
+  cardTagline: { color: palette.muted, fontSize: 12, lineHeight: 16 },
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 20,
+  },
+  footerText: { color: palette.muted, fontSize: 12 },
 });
