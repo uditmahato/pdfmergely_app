@@ -17,6 +17,9 @@ class-based File/Directory/Paths API).
 - Only vendor engines that run on Hermes: pure pdf-lib, no canvas/WASM/Worker/DOM APIs.
 - `react-native-get-random-values` must stay the FIRST import in `src/app/_layout.tsx`
   (pdf-lib's encryption needs crypto.getRandomValues).
+- **No EAS, ever**: the owner builds locally for free. Never add `eas.json`, never run
+  `eas build`/`eas submit`/`eas update`, never suggest EAS as a fix. Local Gradle builds
+  only (see README "Build policy").
 
 ## Verify before pushing
 

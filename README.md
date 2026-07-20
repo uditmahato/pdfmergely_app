@@ -30,7 +30,32 @@ No upload endpoint, no analytics on file contents, no server in the processing p
 npm install
 npm run typecheck     # tsc
 npm run smoke         # engine smoke test in plain Node (no browser APIs)
-npm run android       # build + run on emulator/device
+npm run android       # build + run on emulator/device (local, free)
 ```
 
 Windows note: Android only; iOS builds need a Mac (the code itself is cross-platform).
+
+## Build policy: local only, no EAS
+
+All builds are done locally with Android Studio's SDK, which is free and unlimited.
+This project deliberately does NOT use EAS Build / EAS Submit / EAS Update (Expo's
+paid cloud services). Do not add an `eas.json` or run `eas` commands.
+
+Prerequisites (one-time, all free): Android Studio with an SDK + emulator, and these
+user environment variables:
+
+- `ANDROID_HOME` = `%LOCALAPPDATA%\Android\Sdk`
+- `JAVA_HOME` = `C:\Program Files\Android\Android Studio\jbr` (Studio's bundled JDK)
+- `%ANDROID_HOME%\platform-tools` on `Path` (for adb)
+
+Release build for the Play Store (also local and free):
+
+```bash
+npx expo prebuild --platform android   # generates the android/ project (once)
+# one-time: create an upload keystore, then configure android/app signing
+keytool -genkeypair -v -keystore upload-key.keystore -alias upload -keyalg RSA -keysize 2048 -validity 10000
+cd android && .\gradlew bundleRelease  # -> android/app/build/outputs/bundle/release/app-release.aab
+```
+
+Upload the `.aab` in the Play Console by hand. The only money in the whole pipeline is
+Google's one-time $25 developer registration.
