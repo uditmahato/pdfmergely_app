@@ -15,33 +15,42 @@ export interface ToolDef {
   label: string;
   tagline: string;
   icon: IconName;
-  tint: string;
-  section: string;
+  section: SectionTitle;
   /** Takes several PDFs at once (chooser offers it for multi-file shares). */
   multi?: boolean;
 }
 
-export const SECTION_ORDER = [
-  'Organize',
-  'Stamp & number',
-  'Page layout',
-  'Privacy & security',
+// Color RULE: one hue per category, every tool wears its category's hue.
+// Color encodes what KIND of tool this is (green organizes documents, amber
+// stamps them, blue reshapes pages, red touches security) instead of being
+// 13 arbitrary decorations. Section order = expected frequency of use.
+export const SECTIONS = [
+  { title: 'Organize', tint: '#34d399' },
+  { title: 'Stamp & number', tint: '#fbbf24' },
+  { title: 'Page layout', tint: '#60a5fa' },
+  { title: 'Privacy & security', tint: '#f87171' },
 ] as const;
 
+export type SectionTitle = (typeof SECTIONS)[number]['title'];
+
+export function sectionTint(section: SectionTitle): string {
+  return SECTIONS.find((s) => s.title === section)!.tint;
+}
+
 export const TOOLS: ToolDef[] = [
-  { slug: 'merge', name: 'Merge PDFs', label: 'Merge', tagline: 'Combine PDFs into one', icon: 'git-merge', tint: '#34d399', section: 'Organize', multi: true },
-  { slug: 'split', name: 'Split PDF', label: 'Split', tagline: 'Ranges into new files', icon: 'cut', tint: '#38bdf8', section: 'Organize' },
-  { slug: 'organize', name: 'Organize PDF', label: 'Organize', tagline: 'Reorder, rotate, delete', icon: 'swap-vertical', tint: '#a78bfa', section: 'Organize' },
-  { slug: 'watermark', name: 'Watermark PDF', label: 'Watermark', tagline: 'Stamp every page', icon: 'water', tint: '#22d3ee', section: 'Stamp & number' },
-  { slug: 'page-numbers', name: 'Page numbers', label: 'Page numbers', tagline: 'Number your pages', icon: 'list', tint: '#fbbf24', section: 'Stamp & number' },
-  { slug: 'bates', name: 'Bates numbers', label: 'Bates numbers', tagline: 'Stamp legal exhibit IDs', icon: 'pricetag', tint: '#c084fc', section: 'Stamp & number' },
-  { slug: 'resize', name: 'Resize PDF', label: 'Resize', tagline: 'A4, Letter or Legal', icon: 'resize', tint: '#60a5fa', section: 'Page layout' },
-  { slug: 'nup', name: 'N-up PDF', label: 'N-up', tagline: 'Many pages per sheet', icon: 'grid', tint: '#2dd4bf', section: 'Page layout' },
-  { slug: 'flatten', name: 'Flatten PDF', label: 'Flatten', tagline: 'Lock form fields', icon: 'layers', tint: '#f59e0b', section: 'Page layout' },
-  { slug: 'protect', name: 'Protect PDF', label: 'Protect', tagline: 'Add a password', icon: 'lock-closed', tint: '#f472b6', section: 'Privacy & security' },
-  { slug: 'unlock', name: 'Unlock PDF', label: 'Unlock', tagline: 'Remove a password', icon: 'lock-open', tint: '#4ade80', section: 'Privacy & security' },
-  { slug: 'metadata', name: 'Remove metadata', label: 'Remove metadata', tagline: 'Strip hidden data', icon: 'eye-off', tint: '#fb923c', section: 'Privacy & security' },
-  { slug: 'signature', name: 'Remove signatures', label: 'Remove signatures', tagline: 'Strip digital signatures', icon: 'shield-half', tint: '#f87171', section: 'Privacy & security' },
+  { slug: 'merge', name: 'Merge PDFs', label: 'Merge', tagline: 'Combine PDFs into one', icon: 'git-merge', section: 'Organize', multi: true },
+  { slug: 'split', name: 'Split PDF', label: 'Split', tagline: 'Ranges into new files', icon: 'cut', section: 'Organize' },
+  { slug: 'organize', name: 'Organize PDF', label: 'Organize', tagline: 'Reorder, rotate, delete', icon: 'swap-vertical', section: 'Organize' },
+  { slug: 'watermark', name: 'Watermark PDF', label: 'Watermark', tagline: 'Stamp every page', icon: 'water', section: 'Stamp & number' },
+  { slug: 'page-numbers', name: 'Page numbers', label: 'Page numbers', tagline: 'Number your pages', icon: 'list', section: 'Stamp & number' },
+  { slug: 'bates', name: 'Bates numbers', label: 'Bates numbers', tagline: 'Stamp legal exhibit IDs', icon: 'pricetag', section: 'Stamp & number' },
+  { slug: 'resize', name: 'Resize PDF', label: 'Resize', tagline: 'A4, Letter or Legal', icon: 'resize', section: 'Page layout' },
+  { slug: 'nup', name: 'N-up PDF', label: 'N-up', tagline: 'Many pages per sheet', icon: 'grid', section: 'Page layout' },
+  { slug: 'flatten', name: 'Flatten PDF', label: 'Flatten', tagline: 'Lock form fields', icon: 'layers', section: 'Page layout' },
+  { slug: 'protect', name: 'Protect PDF', label: 'Protect', tagline: 'Add a password', icon: 'lock-closed', section: 'Privacy & security' },
+  { slug: 'unlock', name: 'Unlock PDF', label: 'Unlock', tagline: 'Remove a password', icon: 'lock-open', section: 'Privacy & security' },
+  { slug: 'metadata', name: 'Remove metadata', label: 'Remove metadata', tagline: 'Strip hidden data', icon: 'eye-off', section: 'Privacy & security' },
+  { slug: 'signature', name: 'Remove signatures', label: 'Remove signatures', tagline: 'Strip digital signatures', icon: 'ribbon', section: 'Privacy & security' },
 ];
 
 /** Tools that operate on one document — what the chooser offers for a single shared file. */

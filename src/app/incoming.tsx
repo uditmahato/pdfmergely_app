@@ -7,7 +7,7 @@ import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { palette } from '@/lib/brand';
 import { formatBytes, type PickedPdf } from '@/lib/files';
-import { MERGE_TOOL, SINGLE_TOOLS, type ToolDef } from '@/lib/tools';
+import { MERGE_TOOL, SINGLE_TOOLS, sectionTint, type ToolDef } from '@/lib/tools';
 import { PrivacyBadge } from '@/components/ui';
 
 // Module-level so the params survive this screen remounting.
@@ -21,20 +21,24 @@ export default function IncomingScreen() {
   const files = currentFiles;
   const many = files.length > 1;
 
-  const ToolRow = ({ tool }: { tool: ToolDef }) => (
-    <Pressable
-      onPress={() => router.replace(`/${tool.slug}` as never)}
-      accessibilityRole="button"
-      accessibilityLabel={tool.name}
-      style={({ pressed }) => [styles.tool, pressed && styles.pressed]}
-    >
-      <View style={[styles.toolIcon, { backgroundColor: `${tool.tint}1f` }]}>
-        <Ionicons name={tool.icon} size={20} color={tool.tint} />
-      </View>
-      <Text style={styles.toolName}>{tool.name}</Text>
-      <Ionicons name="chevron-forward" size={18} color={palette.muted} />
-    </Pressable>
-  );
+  const ToolRow = ({ tool }: { tool: ToolDef }) => {
+    const tint = sectionTint(tool.section);
+    return (
+      <Pressable
+        onPress={() => router.replace(`/${tool.slug}` as never)}
+        accessibilityRole="button"
+        accessibilityLabel={tool.name}
+        android_ripple={{ color: 'rgba(255, 255, 255, 0.07)', foreground: true }}
+        style={({ pressed }) => [styles.tool, pressed && styles.pressed]}
+      >
+        <View style={[styles.toolIcon, { backgroundColor: `${tint}1f` }]}>
+          <Ionicons name={tool.icon} size={20} color={tint} />
+        </View>
+        <Text style={styles.toolName}>{tool.name}</Text>
+        <Ionicons name="chevron-forward" size={18} color={palette.muted} />
+      </Pressable>
+    );
+  };
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>

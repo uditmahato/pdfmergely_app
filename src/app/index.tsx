@@ -7,10 +7,10 @@ import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { palette } from '@/lib/brand';
-import { SECTION_ORDER, TOOLS, type ToolDef } from '@/lib/tools';
+import { SECTIONS, TOOLS, type ToolDef } from '@/lib/tools';
 import { PrivacyBadge } from '@/components/ui';
 
-function Tile({ tool }: { tool: ToolDef }) {
+function Tile({ tool, tint }: { tool: ToolDef; tint: string }) {
   const router = useRouter();
   return (
     <Pressable
@@ -20,8 +20,8 @@ function Tile({ tool }: { tool: ToolDef }) {
       android_ripple={{ color: 'rgba(255, 255, 255, 0.07)', foreground: true }}
       style={({ pressed }) => [styles.tile, pressed && styles.tilePressed]}
     >
-      <View style={[styles.tileIcon, { backgroundColor: `${tool.tint}1f` }]}>
-        <Ionicons name={tool.icon} size={26} color={tool.tint} />
+      <View style={[styles.tileIcon, { backgroundColor: `${tint}1f` }]}>
+        <Ionicons name={tool.icon} size={26} color={tint} />
       </View>
       <Text style={styles.tileLabel} numberOfLines={2}>
         {tool.label}
@@ -38,12 +38,16 @@ export default function Home() {
       contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 24 }]}
     >
       <PrivacyBadge />
-      {SECTION_ORDER.map((section) => (
-        <View key={section}>
-          <Text style={styles.sectionTitle}>{section}</Text>
+      {SECTIONS.map(({ title, tint }) => (
+        <View key={title}>
+          <View style={styles.sectionRow}>
+            {/* The dot teaches the rule: this color = this category. */}
+            <View style={[styles.sectionDot, { backgroundColor: tint }]} />
+            <Text style={styles.sectionTitle}>{title}</Text>
+          </View>
           <View style={styles.grid}>
-            {TOOLS.filter((t) => t.section === section).map((t) => (
-              <Tile key={t.slug} tool={t} />
+            {TOOLS.filter((t) => t.section === title).map((t) => (
+              <Tile key={t.slug} tool={t} tint={tint} />
             ))}
           </View>
         </View>
@@ -57,14 +61,20 @@ const TILE_GAP = 10;
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: palette.bg },
   content: { paddingHorizontal: 16, paddingTop: 12, gap: 4 },
+  sectionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingTop: 18,
+    paddingBottom: 10,
+  },
+  sectionDot: { height: 7, width: 7, borderRadius: 4 },
   sectionTitle: {
     color: palette.muted,
     fontSize: 13,
     fontWeight: '700',
     letterSpacing: 0.3,
     textTransform: 'uppercase',
-    paddingTop: 18,
-    paddingBottom: 10,
   },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: TILE_GAP },
   tile: {
