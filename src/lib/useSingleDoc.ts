@@ -6,6 +6,7 @@ import * as React from 'react';
 import { probe } from '@/core/engine/merge';
 import { PdfError } from '@/core/types';
 import { pickPdfs, readBytes, shareResult, type PickedPdf } from '@/lib/files';
+import { takeIncomingSingle } from '@/lib/incoming';
 
 export interface SingleDocState {
   file: PickedPdf | null;
@@ -41,18 +42,14 @@ export function useSingleDoc(): SingleDocState {
   // Kept out of state: only needed for the share-again action, never rendered.
   const resultRef = React.useRef<{ bytes: Uint8Array; filename: string } | null>(null);
 
-  const pick = React.useCallback(async () => {
-    setError(null);
-    setDone(null);
-    const picked = await pickPdfs(false);
-    if (!picked.length) return;
+  const load = React.useCallback(async (picked: PickedPdf) => {
     setBusy(true);
     try {
-      const b = await readBytes(picked[0].uri);
+      const b = await readBytes(picked.uri);
       // probe() tolerates encrypted PDFs (ignoreEncryption), so protected
       // files can still be picked; the tool's engine decides what to allow.
       const meta = await probe(b.slice());
-      setFile(picked[0]);
+      setFile(picked);
       setBytes(b);
       setPageCount(meta.pageCount);
     } catch (e) {
@@ -61,6 +58,20 @@ export function useSingleDoc(): SingleDocState {
       setBusy(false);
     }
   }, []);
+
+  const pick = React.useCallback(async () => {
+    setError(null);
+    setDone(null);
+    const picked = await pickPdfs(false);
+    if (picked.length) await load(picked[0]);
+  }, [load]);
+
+  // "Share PDF -> PDFMergely": if a shared file is waiting in the incoming
+  // stash when this tool mounts, load it immediately, no picker needed.
+  React.useEffect(() => {
+    const shared = takeIncomingSingle();
+    if (shared) void load(shared);
+  }, [load]);
 
   const run = React.useCallback(
     async (fn: (bytes: Uint8Array) => Promise<{ bytes: Uint8Array; filename: string }>) => {

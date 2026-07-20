@@ -11,6 +11,7 @@ import {
   type TextInputProps,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { palette } from '@/lib/brand';
 
 type IconName = keyof typeof Ionicons.glyphMap;
@@ -30,7 +31,10 @@ export function BrandButton({
 }) {
   return (
     <Pressable
-      onPress={onPress}
+      onPress={() => {
+        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        onPress();
+      }}
       disabled={disabled}
       style={({ pressed }) => [
         styles.btn,
@@ -158,6 +162,10 @@ export function SuccessCard({
   onShareAgain: () => void;
   onReset: () => void;
 }) {
+  // One success buzz when the card appears.
+  React.useEffect(() => {
+    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  }, []);
   return (
     <View style={styles.success}>
       <View style={styles.successIcon}>

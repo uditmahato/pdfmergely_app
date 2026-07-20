@@ -1,12 +1,13 @@
 import * as React from 'react';
-import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { merge } from '@/core/engine/merge';
 import { PdfError } from '@/core/types';
 import { formatBytes, pickPdfs, readBytes, shareResult, type PickedPdf } from '@/lib/files';
+import { takeIncomingAll } from '@/lib/incoming';
 import { palette } from '@/lib/brand';
-import { BrandButton, BusyNote, IconButton, PrivacyBadge, SuccessCard } from '@/components/ui';
+import { BrandButton, BusyNote, ErrorNote, IconButton, PrivacyBadge, SuccessCard } from '@/components/ui';
 
 interface Item extends PickedPdf {
   id: string;
@@ -19,7 +20,16 @@ export default function MergeScreen() {
   const [items, setItems] = React.useState<Item[]>([]);
   const [busy, setBusy] = React.useState(false);
   const [done, setDone] = React.useState<{ filename: string; size: number } | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
   const resultRef = React.useRef<{ bytes: Uint8Array; filename: string } | null>(null);
+
+  // "Share PDFs -> PDFMergely -> Merge": preload any shared files.
+  React.useEffect(() => {
+    const shared = takeIncomingAll();
+    if (shared.length) {
+      setItems(shared.map((p) => ({ ...p, id: String(nextId++) })));
+    }
+  }, []);
 
   async function addFiles() {
     const picked = await pickPdfs(true);
@@ -52,6 +62,7 @@ export default function MergeScreen() {
   async function run() {
     if (items.length < 2) return;
     setBusy(true);
+    setError(null);
     try {
       const sources = [];
       for (const item of items) {
@@ -62,13 +73,13 @@ export default function MergeScreen() {
       setDone({ filename: 'merged.pdf', size: out.byteLength });
       await shareResult(out, 'merged.pdf');
     } catch (e) {
-      const message =
+      setError(
         e instanceof PdfError && e.code === 'ENCRYPTED'
           ? 'One of the PDFs is password-protected. Unlock it first.'
           : e instanceof PdfError && e.code === 'INVALID_PDF'
             ? 'One of the files is not a valid PDF.'
-            : 'Something went wrong while merging. Please try again.';
-      Alert.alert('Could not merge', message);
+            : 'Something went wrong while merging. Please try again.',
+      );
     } finally {
       setBusy(false);
     }
@@ -136,6 +147,7 @@ export default function MergeScreen() {
 
       {items.length > 0 && (
         <View style={[styles.ctaBar, { paddingBottom: insets.bottom + 12 }]}>
+          {error && <ErrorNote text={error} />}
           {busy ? (
             <BusyNote text="Merging on your device…" />
           ) : (
