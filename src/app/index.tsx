@@ -9,15 +9,18 @@ interface ToolEntry {
   available: boolean;
 }
 
-// v1 ships the pure-JS (pdf-lib) tools; the canvas/WASM tools (OCR, scan,
-// compress-to-size, previews) need native modules and arrive in later phases.
+// Pure-JS (pdf-lib) tools, all sharing the web app's vendored engine. The
+// canvas/WASM tools (OCR, scan, compress-to-size, previews) need native
+// modules and arrive in later phases.
 const TOOLS: ToolEntry[] = [
   { slug: 'merge', name: 'Merge PDF', tagline: 'Combine PDFs in the order you want', available: true },
-  { slug: 'split', name: 'Split PDF', tagline: 'Extract page ranges into new files', available: false },
-  { slug: 'rotate', name: 'Rotate PDF', tagline: 'Turn pages the right way up', available: false },
-  { slug: 'organize', name: 'Organize PDF', tagline: 'Reorder, rotate and delete pages', available: false },
-  { slug: 'watermark', name: 'Watermark PDF', tagline: 'Stamp text on every page', available: false },
-  { slug: 'protect', name: 'Protect PDF', tagline: 'Password-protect a PDF', available: false },
+  { slug: 'split', name: 'Split PDF', tagline: 'Extract page ranges into new files', available: true },
+  { slug: 'organize', name: 'Organize PDF', tagline: 'Reorder, rotate and delete pages', available: true },
+  { slug: 'watermark', name: 'Watermark PDF', tagline: 'Stamp text on every page', available: true },
+  { slug: 'page-numbers', name: 'Page Numbers', tagline: 'Number your pages', available: true },
+  { slug: 'protect', name: 'Protect PDF', tagline: 'Password-protect a PDF', available: true },
+  { slug: 'unlock', name: 'Unlock PDF', tagline: 'Remove a known password', available: true },
+  { slug: 'metadata', name: 'Remove Metadata', tagline: 'Strip author, dates and hidden data', available: true },
 ];
 
 export default function Home() {

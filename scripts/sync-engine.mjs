@@ -18,7 +18,13 @@ const webRoot = path.join(appRoot, '..', 'pdfmergely');
 const FILES = [
   'src/core/engine/merge.ts',
   'src/core/engine/organize.ts',
+  'src/core/engine/split.ts',
+  'src/core/engine/watermark.ts',
+  'src/core/engine/pageNumbers.ts',
+  'src/core/engine/protect.ts',
+  'src/core/engine/sanitize.ts',
   'src/core/validation/magicBytes.ts',
+  'src/lib/ranges.ts',
 ];
 
 if (!existsSync(webRoot)) {

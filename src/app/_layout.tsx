@@ -20,6 +20,13 @@ export default function RootLayout() {
       >
         <Stack.Screen name="index" options={{ title: 'PDFMergely' }} />
         <Stack.Screen name="merge" options={{ title: 'Merge PDF' }} />
+        <Stack.Screen name="split" options={{ title: 'Split PDF' }} />
+        <Stack.Screen name="organize" options={{ title: 'Organize PDF' }} />
+        <Stack.Screen name="watermark" options={{ title: 'Watermark PDF' }} />
+        <Stack.Screen name="page-numbers" options={{ title: 'Page Numbers' }} />
+        <Stack.Screen name="protect" options={{ title: 'Protect PDF' }} />
+        <Stack.Screen name="unlock" options={{ title: 'Unlock PDF' }} />
+        <Stack.Screen name="metadata" options={{ title: 'Remove Metadata' }} />
       </Stack>
     </>
   );
