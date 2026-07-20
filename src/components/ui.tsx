@@ -36,6 +36,8 @@ export function BrandButton({
         onPress();
       }}
       disabled={disabled}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: !!disabled }}
       style={({ pressed }) => [
         styles.btn,
         variant === 'primary' ? styles.btnPrimary : styles.btnSecondary,
@@ -75,7 +77,9 @@ export function IconButton({
     <Pressable
       onPress={onPress}
       disabled={disabled}
+      accessibilityRole="button"
       accessibilityLabel={label}
+      accessibilityState={{ disabled: !!disabled }}
       hitSlop={4}
       style={({ pressed }) => [styles.iconBtn, disabled && styles.btnDisabled, pressed && styles.pressed]}
     >
@@ -109,11 +113,14 @@ export function Segmented<T extends string>({
   onChange: (v: T) => void;
 }) {
   return (
-    <View style={styles.seg}>
+    <View style={styles.seg} accessibilityRole="radiogroup">
       {options.map((o) => (
         <Pressable
           key={o.id}
           onPress={() => onChange(o.id)}
+          accessibilityRole="radio"
+          accessibilityLabel={o.label}
+          accessibilityState={{ checked: value === o.id }}
           style={[styles.segItem, value === o.id && styles.segItemActive]}
         >
           <Text style={[styles.segText, value === o.id && styles.segTextActive]}>{o.label}</Text>
@@ -231,7 +238,8 @@ const styles = StyleSheet.create({
     padding: 3,
     gap: 3,
   },
-  segItem: { flex: 1, paddingVertical: 9, borderRadius: 9, alignItems: 'center' },
+  // paddingVertical 13 puts the row at ~44dp, the minimum comfortable target.
+  segItem: { flex: 1, paddingVertical: 13, borderRadius: 9, alignItems: 'center' },
   segItemActive: { backgroundColor: palette.brandSoft },
   segText: { color: palette.muted, fontSize: 13, fontWeight: '600' },
   segTextActive: { color: palette.brand },
@@ -268,7 +276,9 @@ const styles = StyleSheet.create({
   },
   successIcon: { paddingBottom: 2 },
   successTitle: { color: palette.foreground, fontSize: 18, fontWeight: '800' },
-  successMeta: { color: palette.muted, fontSize: 13 },
+  // Lighter than `muted`: on the green-tinted card the gray-blue muted tone
+  // sits near the AA contrast floor.
+  successMeta: { color: 'hsl(210, 30%, 85%)', fontSize: 13 },
   successActions: { alignSelf: 'stretch', gap: 8, paddingTop: 6 },
   successNote: { color: palette.muted, fontSize: 11, paddingTop: 2 },
 });

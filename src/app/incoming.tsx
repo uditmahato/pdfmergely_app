@@ -7,9 +7,8 @@ import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { palette } from '@/lib/brand';
 import { formatBytes, type PickedPdf } from '@/lib/files';
+import { MERGE_TOOL, SINGLE_TOOLS, type ToolDef } from '@/lib/tools';
 import { PrivacyBadge } from '@/components/ui';
-
-type IconName = keyof typeof Ionicons.glyphMap;
 
 // Module-level so the params survive this screen remounting.
 let currentFiles: PickedPdf[] = [];
@@ -17,25 +16,25 @@ export function setIncomingScreenFiles(files: PickedPdf[]) {
   currentFiles = files;
 }
 
-const SINGLE_TOOLS: { slug: string; name: string; icon: IconName }[] = [
-  { slug: 'split', name: 'Split', icon: 'cut' },
-  { slug: 'organize', name: 'Organize', icon: 'swap-vertical' },
-  { slug: 'watermark', name: 'Watermark', icon: 'water' },
-  { slug: 'page-numbers', name: 'Page numbers', icon: 'list' },
-  { slug: 'protect', name: 'Protect', icon: 'lock-closed' },
-  { slug: 'unlock', name: 'Unlock', icon: 'lock-open' },
-  { slug: 'metadata', name: 'Metadata', icon: 'eye-off' },
-  { slug: 'bates', name: 'Bates numbers', icon: 'pricetag' },
-  { slug: 'resize', name: 'Resize', icon: 'resize' },
-  { slug: 'nup', name: 'N-up', icon: 'grid' },
-  { slug: 'flatten', name: 'Flatten', icon: 'layers' },
-  { slug: 'signature', name: 'Remove signatures', icon: 'shield-half' },
-];
-
 export default function IncomingScreen() {
   const router = useRouter();
   const files = currentFiles;
   const many = files.length > 1;
+
+  const ToolRow = ({ tool }: { tool: ToolDef }) => (
+    <Pressable
+      onPress={() => router.replace(`/${tool.slug}` as never)}
+      accessibilityRole="button"
+      accessibilityLabel={tool.name}
+      style={({ pressed }) => [styles.tool, pressed && styles.pressed]}
+    >
+      <View style={[styles.toolIcon, { backgroundColor: `${tool.tint}1f` }]}>
+        <Ionicons name={tool.icon} size={20} color={tool.tint} />
+      </View>
+      <Text style={styles.toolName}>{tool.name}</Text>
+      <Ionicons name="chevron-forward" size={18} color={palette.muted} />
+    </Pressable>
+  );
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
@@ -62,30 +61,9 @@ export default function IncomingScreen() {
       </Text>
 
       {many ? (
-        <Pressable
-          onPress={() => router.replace('/merge' as never)}
-          style={({ pressed }) => [styles.tool, pressed && styles.pressed]}
-        >
-          <View style={styles.toolIcon}>
-            <Ionicons name="git-merge" size={20} color={palette.brand} />
-          </View>
-          <Text style={styles.toolName}>Merge into one PDF</Text>
-          <Ionicons name="chevron-forward" size={18} color={palette.muted} />
-        </Pressable>
+        <ToolRow tool={MERGE_TOOL} />
       ) : (
-        SINGLE_TOOLS.map((t) => (
-          <Pressable
-            key={t.slug}
-            onPress={() => router.replace(`/${t.slug}` as never)}
-            style={({ pressed }) => [styles.tool, pressed && styles.pressed]}
-          >
-            <View style={styles.toolIcon}>
-              <Ionicons name={t.icon} size={20} color={palette.brand} />
-            </View>
-            <Text style={styles.toolName}>{t.name}</Text>
-            <Ionicons name="chevron-forward" size={18} color={palette.muted} />
-          </Pressable>
-        ))
+        SINGLE_TOOLS.map((t) => <ToolRow key={t.slug} tool={t} />)
       )}
     </ScrollView>
   );
@@ -122,7 +100,6 @@ const styles = StyleSheet.create({
     borderRadius: 11,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: palette.brandSoft,
   },
   toolName: { flex: 1, color: palette.foreground, fontSize: 15, fontWeight: '700' },
   pressed: { opacity: 0.85 },

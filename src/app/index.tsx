@@ -3,34 +3,14 @@ import { useRouter } from 'expo-router';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { palette } from '@/lib/brand';
-
-type IconName = keyof typeof Ionicons.glyphMap;
-
-interface ToolEntry {
-  slug: string;
-  name: string;
-  tagline: string;
-  icon: IconName;
-  tint: string;
-}
+import { TOOLS, type ToolDef } from '@/lib/tools';
 
 // Pure-JS (pdf-lib) tools, all sharing the web app's vendored engine. The
 // canvas/WASM tools (OCR, scan, compress-to-size, previews) need native
-// modules and arrive in later phases.
-const TOOLS: ToolEntry[] = [
-  { slug: 'merge', name: 'Merge', tagline: 'Combine PDFs into one', icon: 'git-merge', tint: '#34d399' },
-  { slug: 'split', name: 'Split', tagline: 'Ranges into new files', icon: 'cut', tint: '#38bdf8' },
-  { slug: 'organize', name: 'Organize', tagline: 'Reorder, rotate, delete', icon: 'swap-vertical', tint: '#a78bfa' },
-  { slug: 'watermark', name: 'Watermark', tagline: 'Stamp every page', icon: 'water', tint: '#22d3ee' },
-  { slug: 'page-numbers', name: 'Page numbers', tagline: 'Number your pages', icon: 'list', tint: '#fbbf24' },
-  { slug: 'protect', name: 'Protect', tagline: 'Add a password', icon: 'lock-closed', tint: '#f472b6' },
-  { slug: 'unlock', name: 'Unlock', tagline: 'Remove a password', icon: 'lock-open', tint: '#4ade80' },
-  { slug: 'metadata', name: 'Metadata', tagline: 'Strip hidden data', icon: 'eye-off', tint: '#fb923c' },
-  { slug: 'bates', name: 'Bates numbers', tagline: 'Stamp legal exhibit IDs', icon: 'pricetag', tint: '#c084fc' },
-  { slug: 'resize', name: 'Resize', tagline: 'A4, Letter or Legal', icon: 'resize', tint: '#60a5fa' },
-  { slug: 'nup', name: 'N-up', tagline: 'Many pages per sheet', icon: 'grid', tint: '#2dd4bf' },
-  { slug: 'flatten', name: 'Flatten', tagline: 'Lock form fields', icon: 'layers', tint: '#f59e0b' },
-  { slug: 'signature', name: 'Signatures', tagline: 'Remove digital signatures', icon: 'shield-half', tint: '#f87171' },
+// modules and arrive in later phases. About sits last so the grid stays even.
+const CARDS: ToolDef[] = [
+  ...TOOLS,
+  { slug: 'about', name: 'About', tagline: 'Privacy, version & links', icon: 'information-circle', tint: '#94a3b8' },
 ];
 
 export default function Home() {
@@ -40,7 +20,7 @@ export default function Home() {
     <FlatList
       style={styles.list}
       contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 24 }]}
-      data={TOOLS}
+      data={CARDS}
       numColumns={2}
       columnWrapperStyle={styles.column}
       keyExtractor={(t) => t.slug}
@@ -61,6 +41,8 @@ export default function Home() {
         // stripped the card background/border on device.
         <Pressable
           onPress={() => router.push(`/${item.slug}` as never)}
+          accessibilityRole="button"
+          accessibilityLabel={`${item.name}. ${item.tagline}`}
           style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
         >
           <View style={[styles.iconTile, { backgroundColor: `${item.tint}1f` }]}>

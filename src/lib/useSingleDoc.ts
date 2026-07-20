@@ -27,7 +27,8 @@ function friendly(e: unknown): string {
     if (e.code === 'ENCRYPTED') return 'This PDF is password-protected. Unlock it first.';
     if (e.code === 'WRONG_PASSWORD') return 'Wrong password. Please try again.';
     if (e.code === 'NOT_ENCRYPTED') return 'This PDF is not password-protected.';
-    if (e.code === 'INVALID_PDF') return 'That file is not a valid PDF.';
+    if (e.code === 'INVALID_PDF')
+      return 'That file is not a valid PDF. Try another file, or repair it at pdfmergely.com.';
   }
   return 'Something went wrong while processing. Please try again.';
 }
@@ -82,8 +83,10 @@ export function useSingleDoc(): SingleDocState {
       try {
         const out = await fn(bytes.slice());
         resultRef.current = out;
+        // Show the success card and stop: opening the share sheet here would
+        // cover the card before the user reads it. Sharing is the card's
+        // explicit "Share / Save" action (shareAgain).
         setDone({ filename: out.filename, size: out.bytes.byteLength });
-        await shareResult(out.bytes, out.filename);
       } catch (e) {
         setError(friendly(e));
       } finally {

@@ -75,7 +75,13 @@ export default function SplitScreen() {
   return (
     <SingleDocShell
       doc={doc}
-      runLabel={`Split into ${groups.length || '…'} file${groups.length === 1 ? '' : 's'}`}
+      // When nothing valid is typed yet, the button names the missing step
+      // instead of showing a cryptic "Split into … files".
+      runLabel={
+        groups.length === 0
+          ? 'Enter page ranges'
+          : `Split into ${groups.length} file${groups.length === 1 ? '' : 's'}`
+      }
       onRun={run}
       runDisabled={groups.length === 0}
       runIcon="cut"
@@ -88,6 +94,9 @@ export default function SplitScreen() {
           placeholder="e.g. 1-3, 5, 8-10"
           autoCapitalize="none"
           autoCorrect={false}
+          // Android's phone pad: digits plus "-" and "," — everything ranges
+          // need, without the full QWERTY keyboard.
+          keyboardType="phone-pad"
         />
       </Field>
       <Text style={styles.hint}>

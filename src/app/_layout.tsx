@@ -8,6 +8,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useShareIntent } from 'expo-share-intent';
 import { palette } from '@/lib/brand';
 import { stashIncoming } from '@/lib/incoming';
+import { TOOLS } from '@/lib/tools';
 import { setIncomingScreenFiles } from './incoming';
 
 export default function RootLayout() {
@@ -50,19 +51,12 @@ export default function RootLayout() {
       >
         <Stack.Screen name="index" options={{ title: 'PDFMergely' }} />
         <Stack.Screen name="incoming" options={{ title: 'Shared with PDFMergely' }} />
-        <Stack.Screen name="merge" options={{ title: 'Merge PDF' }} />
-        <Stack.Screen name="split" options={{ title: 'Split PDF' }} />
-        <Stack.Screen name="organize" options={{ title: 'Organize PDF' }} />
-        <Stack.Screen name="watermark" options={{ title: 'Watermark PDF' }} />
-        <Stack.Screen name="page-numbers" options={{ title: 'Page Numbers' }} />
-        <Stack.Screen name="protect" options={{ title: 'Protect PDF' }} />
-        <Stack.Screen name="unlock" options={{ title: 'Unlock PDF' }} />
-        <Stack.Screen name="metadata" options={{ title: 'Remove Metadata' }} />
-        <Stack.Screen name="bates" options={{ title: 'Bates Numbering' }} />
-        <Stack.Screen name="resize" options={{ title: 'Resize PDF' }} />
-        <Stack.Screen name="nup" options={{ title: 'N-up PDF' }} />
-        <Stack.Screen name="flatten" options={{ title: 'Flatten PDF' }} />
-        <Stack.Screen name="signature" options={{ title: 'Remove Signatures' }} />
+        {/* Headers come from the tool registry so they always match the
+            home-card and chooser names exactly. */}
+        {TOOLS.map((t) => (
+          <Stack.Screen key={t.slug} name={t.slug} options={{ title: t.name }} />
+        ))}
+        <Stack.Screen name="about" options={{ title: 'About' }} />
       </Stack>
     </>
   );

@@ -70,14 +70,14 @@ export default function MergeScreen() {
       }
       const out = await merge(sources);
       resultRef.current = { bytes: out, filename: 'merged.pdf' };
+      // Success card first; the sheet opens from its "Share / Save" button.
       setDone({ filename: 'merged.pdf', size: out.byteLength });
-      await shareResult(out, 'merged.pdf');
     } catch (e) {
       setError(
         e instanceof PdfError && e.code === 'ENCRYPTED'
           ? 'One of the PDFs is password-protected. Unlock it first.'
           : e instanceof PdfError && e.code === 'INVALID_PDF'
-            ? 'One of the files is not a valid PDF.'
+            ? 'One of the files is not a valid PDF. Remove it and try again.'
             : 'Something went wrong while merging. Please try again.',
       );
     } finally {
@@ -219,7 +219,8 @@ const styles = StyleSheet.create({
   rowBody: { flex: 1, gap: 2 },
   rowName: { color: palette.foreground, fontSize: 14, fontWeight: '600' },
   rowSize: { color: palette.muted, fontSize: 12 },
-  empty: { color: palette.muted, textAlign: 'center', paddingVertical: 28, lineHeight: 20 },
+  // Sits directly under the dropzone, not floating mid-screen.
+  empty: { color: palette.muted, paddingTop: 2, lineHeight: 20, fontSize: 13 },
   ctaBar: {
     position: 'absolute',
     left: 0,

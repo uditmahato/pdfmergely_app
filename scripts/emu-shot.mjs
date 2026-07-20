@@ -10,11 +10,13 @@ import path from 'node:path';
 
 const ADB = path.join(process.env.LOCALAPPDATA ?? '', 'Android', 'Sdk', 'platform-tools', 'adb.exe');
 const PKG = 'com.pdfmergely.app';
+// Pin to the emulator so a plugged-in phone doesn't break every command.
+const SERIAL = process.env.ANDROID_SERIAL ?? 'emulator-5554';
 
 const [cmd, ...args] = process.argv.slice(2);
 
 function adb(...a) {
-  return execFileSync(ADB, a, { maxBuffer: 32 * 1024 * 1024 });
+  return execFileSync(ADB, ['-s', SERIAL, ...a], { maxBuffer: 32 * 1024 * 1024 });
 }
 
 switch (cmd) {
