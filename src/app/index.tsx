@@ -1,116 +1,97 @@
+// Home: a native launcher, not a landing page. Compact sectioned 3-column
+// grid of tool tiles with Android ripple; the privacy promise is a slim
+// badge (the full pitch lives in About, reachable from the header).
+
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { palette } from '@/lib/brand';
-import { TOOLS, type ToolDef } from '@/lib/tools';
+import { SECTION_ORDER, TOOLS, type ToolDef } from '@/lib/tools';
+import { PrivacyBadge } from '@/components/ui';
 
-// Pure-JS (pdf-lib) tools, all sharing the web app's vendored engine. The
-// canvas/WASM tools (OCR, scan, compress-to-size, previews) need native
-// modules and arrive in later phases. About sits last so the grid stays even.
-const CARDS: ToolDef[] = [
-  ...TOOLS,
-  { slug: 'about', name: 'About', tagline: 'Privacy, version & links', icon: 'information-circle', tint: '#94a3b8' },
-];
-
-export default function Home() {
-  const insets = useSafeAreaInsets();
+function Tile({ tool }: { tool: ToolDef }) {
   const router = useRouter();
   return (
-    <FlatList
-      style={styles.list}
-      contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 24 }]}
-      data={CARDS}
-      numColumns={2}
-      columnWrapperStyle={styles.column}
-      keyExtractor={(t) => t.slug}
-      ListHeaderComponent={
-        <View style={styles.hero}>
-          <View style={styles.privacyChip}>
-            <Ionicons name="shield-checkmark" size={14} color={palette.brand} />
-            <Text style={styles.privacyText}>Files never leave your phone</Text>
-          </View>
-          <Text style={styles.h1}>
-            Private PDF tools,{'\n'}right on your <Text style={styles.h1Brand}>device</Text>
-          </Text>
-        </View>
-      }
-      renderItem={({ item }) => (
-        // Plain Pressable + router.push instead of <Link asChild>: asChild's
-        // prop-cloning drops Pressable's function-form style, which silently
-        // stripped the card background/border on device.
-        <Pressable
-          onPress={() => router.push(`/${item.slug}` as never)}
-          accessibilityRole="button"
-          accessibilityLabel={`${item.name}. ${item.tagline}`}
-          style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
-        >
-          <View style={[styles.iconTile, { backgroundColor: `${item.tint}1f` }]}>
-            <Ionicons name={item.icon} size={24} color={item.tint} />
-          </View>
-          <Text style={styles.cardTitle}>{item.name}</Text>
-          <Text style={styles.cardTagline} numberOfLines={2}>
-            {item.tagline}
-          </Text>
-        </Pressable>
-      )}
-      ListFooterComponent={
-        <View style={styles.footer}>
-          <Ionicons name="cloud-offline-outline" size={14} color={palette.muted} />
-          <Text style={styles.footerText}>Works offline · No sign-up · Free</Text>
-        </View>
-      }
-    />
+    <Pressable
+      onPress={() => router.push(`/${tool.slug}` as never)}
+      accessibilityRole="button"
+      accessibilityLabel={`${tool.name}. ${tool.tagline}`}
+      android_ripple={{ color: 'rgba(255, 255, 255, 0.07)', foreground: true }}
+      style={({ pressed }) => [styles.tile, pressed && styles.tilePressed]}
+    >
+      <View style={[styles.tileIcon, { backgroundColor: `${tool.tint}1f` }]}>
+        <Ionicons name={tool.icon} size={26} color={tool.tint} />
+      </View>
+      <Text style={styles.tileLabel} numberOfLines={2}>
+        {tool.label}
+      </Text>
+    </Pressable>
   );
 }
 
+export default function Home() {
+  const insets = useSafeAreaInsets();
+  return (
+    <ScrollView
+      style={styles.screen}
+      contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 24 }]}
+    >
+      <PrivacyBadge />
+      {SECTION_ORDER.map((section) => (
+        <View key={section}>
+          <Text style={styles.sectionTitle}>{section}</Text>
+          <View style={styles.grid}>
+            {TOOLS.filter((t) => t.section === section).map((t) => (
+              <Tile key={t.slug} tool={t} />
+            ))}
+          </View>
+        </View>
+      ))}
+    </ScrollView>
+  );
+}
+
+const TILE_GAP = 10;
+
 const styles = StyleSheet.create({
-  list: { backgroundColor: palette.bg },
-  content: { padding: 16 },
-  column: { gap: 12 },
-  hero: { paddingTop: 8, paddingBottom: 20, gap: 12 },
-  privacyChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    alignSelf: 'flex-start',
-    backgroundColor: palette.brandSoft,
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+  screen: { flex: 1, backgroundColor: palette.bg },
+  content: { paddingHorizontal: 16, paddingTop: 12, gap: 4 },
+  sectionTitle: {
+    color: palette.muted,
+    fontSize: 13,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+    textTransform: 'uppercase',
+    paddingTop: 18,
+    paddingBottom: 10,
   },
-  privacyText: { color: palette.brand, fontSize: 12, fontWeight: '700' },
-  h1: { color: palette.foreground, fontSize: 28, fontWeight: '800', lineHeight: 34 },
-  h1Brand: { color: palette.brand },
-  card: {
-    flex: 1,
-    // surface2 + a visible border: plain `surface` is only ~3% lighter than
-    // the page background and disappears entirely on real phone panels.
-    backgroundColor: palette.surface2,
-    borderColor: 'hsl(222, 26%, 24%)',
-    borderWidth: 1,
-    borderRadius: 20,
-    padding: 16,
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: TILE_GAP },
+  tile: {
+    // Three per row: 3 × 31% + 2 gaps < 100%, and a lone tile on the last
+    // row keeps tile width instead of stretching (flexGrow 0).
+    flexBasis: '31%',
+    flexGrow: 0,
+    alignItems: 'center',
     gap: 8,
-    marginBottom: 12,
-    minHeight: 128,
+    paddingVertical: 14,
+    paddingHorizontal: 4,
+    borderRadius: 16,
+    overflow: 'hidden',
   },
-  cardPressed: { backgroundColor: palette.surface2, transform: [{ scale: 0.98 }] },
-  iconTile: {
-    height: 44,
-    width: 44,
-    borderRadius: 13,
+  tilePressed: { transform: [{ scale: 0.96 }] },
+  tileIcon: {
+    height: 56,
+    width: 56,
+    borderRadius: 17,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cardTitle: { color: palette.foreground, fontSize: 16, fontWeight: '700' },
-  cardTagline: { color: palette.muted, fontSize: 12, lineHeight: 16 },
-  footer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 20,
+  tileLabel: {
+    color: palette.foreground,
+    fontSize: 13,
+    fontWeight: '600',
+    textAlign: 'center',
+    lineHeight: 17,
   },
-  footerText: { color: palette.muted, fontSize: 12 },
 });

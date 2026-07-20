@@ -1,6 +1,7 @@
-// Single source of truth for tool identity: the SAME name, icon, and tint are
-// used on the home card, the incoming-file chooser row, and the screen header,
-// so the three can never drift apart. Sentence case, verb-first everywhere.
+// Single source of truth for tool identity: the SAME entry drives the home
+// tile, the incoming-file chooser row, and the screen header, so they can
+// never drift apart. `label` is the short launcher-tile text (its section
+// header supplies the verb context); `name` is the full header/chooser name.
 
 import type { Ionicons } from '@expo/vector-icons';
 
@@ -8,29 +9,39 @@ type IconName = keyof typeof Ionicons.glyphMap;
 
 export interface ToolDef {
   slug: string;
-  /** The one name shown everywhere: card title, chooser row, screen header. */
+  /** Full name: screen header and chooser row. */
   name: string;
+  /** Short launcher-tile label shown under the icon on Home. */
+  label: string;
   tagline: string;
   icon: IconName;
   tint: string;
+  section: string;
   /** Takes several PDFs at once (chooser offers it for multi-file shares). */
   multi?: boolean;
 }
 
+export const SECTION_ORDER = [
+  'Organize',
+  'Stamp & number',
+  'Page layout',
+  'Privacy & security',
+] as const;
+
 export const TOOLS: ToolDef[] = [
-  { slug: 'merge', name: 'Merge PDFs', tagline: 'Combine PDFs into one', icon: 'git-merge', tint: '#34d399', multi: true },
-  { slug: 'split', name: 'Split PDF', tagline: 'Ranges into new files', icon: 'cut', tint: '#38bdf8' },
-  { slug: 'organize', name: 'Organize PDF', tagline: 'Reorder, rotate, delete', icon: 'swap-vertical', tint: '#a78bfa' },
-  { slug: 'watermark', name: 'Watermark PDF', tagline: 'Stamp every page', icon: 'water', tint: '#22d3ee' },
-  { slug: 'page-numbers', name: 'Page numbers', tagline: 'Number your pages', icon: 'list', tint: '#fbbf24' },
-  { slug: 'protect', name: 'Protect PDF', tagline: 'Add a password', icon: 'lock-closed', tint: '#f472b6' },
-  { slug: 'unlock', name: 'Unlock PDF', tagline: 'Remove a password', icon: 'lock-open', tint: '#4ade80' },
-  { slug: 'metadata', name: 'Remove metadata', tagline: 'Strip hidden data', icon: 'eye-off', tint: '#fb923c' },
-  { slug: 'bates', name: 'Bates numbers', tagline: 'Stamp legal exhibit IDs', icon: 'pricetag', tint: '#c084fc' },
-  { slug: 'resize', name: 'Resize PDF', tagline: 'A4, Letter or Legal', icon: 'resize', tint: '#60a5fa' },
-  { slug: 'nup', name: 'N-up PDF', tagline: 'Many pages per sheet', icon: 'grid', tint: '#2dd4bf' },
-  { slug: 'flatten', name: 'Flatten PDF', tagline: 'Lock form fields', icon: 'layers', tint: '#f59e0b' },
-  { slug: 'signature', name: 'Remove signatures', tagline: 'Strip digital signatures', icon: 'shield-half', tint: '#f87171' },
+  { slug: 'merge', name: 'Merge PDFs', label: 'Merge', tagline: 'Combine PDFs into one', icon: 'git-merge', tint: '#34d399', section: 'Organize', multi: true },
+  { slug: 'split', name: 'Split PDF', label: 'Split', tagline: 'Ranges into new files', icon: 'cut', tint: '#38bdf8', section: 'Organize' },
+  { slug: 'organize', name: 'Organize PDF', label: 'Organize', tagline: 'Reorder, rotate, delete', icon: 'swap-vertical', tint: '#a78bfa', section: 'Organize' },
+  { slug: 'watermark', name: 'Watermark PDF', label: 'Watermark', tagline: 'Stamp every page', icon: 'water', tint: '#22d3ee', section: 'Stamp & number' },
+  { slug: 'page-numbers', name: 'Page numbers', label: 'Page numbers', tagline: 'Number your pages', icon: 'list', tint: '#fbbf24', section: 'Stamp & number' },
+  { slug: 'bates', name: 'Bates numbers', label: 'Bates numbers', tagline: 'Stamp legal exhibit IDs', icon: 'pricetag', tint: '#c084fc', section: 'Stamp & number' },
+  { slug: 'resize', name: 'Resize PDF', label: 'Resize', tagline: 'A4, Letter or Legal', icon: 'resize', tint: '#60a5fa', section: 'Page layout' },
+  { slug: 'nup', name: 'N-up PDF', label: 'N-up', tagline: 'Many pages per sheet', icon: 'grid', tint: '#2dd4bf', section: 'Page layout' },
+  { slug: 'flatten', name: 'Flatten PDF', label: 'Flatten', tagline: 'Lock form fields', icon: 'layers', tint: '#f59e0b', section: 'Page layout' },
+  { slug: 'protect', name: 'Protect PDF', label: 'Protect', tagline: 'Add a password', icon: 'lock-closed', tint: '#f472b6', section: 'Privacy & security' },
+  { slug: 'unlock', name: 'Unlock PDF', label: 'Unlock', tagline: 'Remove a password', icon: 'lock-open', tint: '#4ade80', section: 'Privacy & security' },
+  { slug: 'metadata', name: 'Remove metadata', label: 'Remove metadata', tagline: 'Strip hidden data', icon: 'eye-off', tint: '#fb923c', section: 'Privacy & security' },
+  { slug: 'signature', name: 'Remove signatures', label: 'Remove signatures', tagline: 'Strip digital signatures', icon: 'shield-half', tint: '#f87171', section: 'Privacy & security' },
 ];
 
 /** Tools that operate on one document — what the chooser offers for a single shared file. */

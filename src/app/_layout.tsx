@@ -3,6 +3,8 @@
 import 'react-native-get-random-values';
 
 import * as React from 'react';
+import { Pressable } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useShareIntent } from 'expo-share-intent';
@@ -49,7 +51,30 @@ export default function RootLayout() {
           contentStyle: { backgroundColor: palette.bg },
         }}
       >
-        <Stack.Screen name="index" options={{ title: 'PDFMergely' }} />
+        <Stack.Screen
+          name="index"
+          options={{
+            title: 'PDFMergely',
+            // About lives in the app bar, where apps keep it — not as a
+            // grid tile among the tools.
+            headerRight: () => (
+              <Pressable
+                onPress={() => router.push('/about' as never)}
+                accessibilityRole="button"
+                accessibilityLabel="About PDFMergely"
+                hitSlop={8}
+              >
+                {({ pressed }) => (
+                  <Ionicons
+                    name="information-circle-outline"
+                    size={24}
+                    color={pressed ? palette.muted : palette.foreground}
+                  />
+                )}
+              </Pressable>
+            ),
+          }}
+        />
         <Stack.Screen name="incoming" options={{ title: 'Shared with PDFMergely' }} />
         {/* Headers come from the tool registry so they always match the
             home-card and chooser names exactly. */}
