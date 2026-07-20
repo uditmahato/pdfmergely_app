@@ -45,7 +45,11 @@ export default function RootLayout() {
       <StatusBar style="light" />
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: palette.surface },
+          // Flat Material 3 style top bar: same color as the page, no
+          // elevation seam, so the status-bar area blends seamlessly on
+          // edge-to-edge Android instead of showing a two-tone band.
+          headerStyle: { backgroundColor: palette.bg },
+          headerShadowVisible: false,
           headerTintColor: palette.foreground,
           headerTitleStyle: { fontWeight: '700' },
           contentStyle: { backgroundColor: palette.bg },
