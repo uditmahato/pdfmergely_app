@@ -25,6 +25,11 @@ const SINGLE_TOOLS: { slug: string; name: string; icon: IconName }[] = [
   { slug: 'protect', name: 'Protect', icon: 'lock-closed' },
   { slug: 'unlock', name: 'Unlock', icon: 'lock-open' },
   { slug: 'metadata', name: 'Metadata', icon: 'eye-off' },
+  { slug: 'bates', name: 'Bates numbers', icon: 'pricetag' },
+  { slug: 'resize', name: 'Resize', icon: 'resize' },
+  { slug: 'nup', name: 'N-up', icon: 'grid' },
+  { slug: 'flatten', name: 'Flatten', icon: 'layers' },
+  { slug: 'signature', name: 'Remove signatures', icon: 'shield-half' },
 ];
 
 export default function IncomingScreen() {

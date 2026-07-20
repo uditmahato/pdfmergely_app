@@ -23,6 +23,13 @@ const FILES = [
   'src/core/engine/pageNumbers.ts',
   'src/core/engine/protect.ts',
   'src/core/engine/sanitize.ts',
+  'src/core/engine/bates.ts',
+  'src/core/engine/resize.ts',
+  'src/core/engine/nup.ts',
+  'src/core/engine/flatten.ts',
+  'src/core/engine/signature.ts',
+  // NOT vendored: repair.ts (qpdf WASM; Hermes has no WebAssembly), and the
+  // canvas/worker engines (compress-to-size, ocr, images, crop previews).
   'src/core/validation/magicBytes.ts',
   'src/lib/ranges.ts',
 ];

@@ -26,6 +26,11 @@ const TOOLS: ToolEntry[] = [
   { slug: 'protect', name: 'Protect', tagline: 'Add a password', icon: 'lock-closed', tint: '#f472b6' },
   { slug: 'unlock', name: 'Unlock', tagline: 'Remove a password', icon: 'lock-open', tint: '#4ade80' },
   { slug: 'metadata', name: 'Metadata', tagline: 'Strip hidden data', icon: 'eye-off', tint: '#fb923c' },
+  { slug: 'bates', name: 'Bates numbers', tagline: 'Stamp legal exhibit IDs', icon: 'pricetag', tint: '#c084fc' },
+  { slug: 'resize', name: 'Resize', tagline: 'A4, Letter or Legal', icon: 'resize', tint: '#60a5fa' },
+  { slug: 'nup', name: 'N-up', tagline: 'Many pages per sheet', icon: 'grid', tint: '#2dd4bf' },
+  { slug: 'flatten', name: 'Flatten', tagline: 'Lock form fields', icon: 'layers', tint: '#f59e0b' },
+  { slug: 'signature', name: 'Signatures', tagline: 'Remove digital signatures', icon: 'shield-half', tint: '#f87171' },
 ];
 
 export default function Home() {

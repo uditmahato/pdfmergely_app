@@ -9,6 +9,11 @@ import { watermarkText } from '../src/core/engine/watermark';
 import { addPageNumbers } from '../src/core/engine/pageNumbers';
 import { protect, unlock } from '../src/core/engine/protect';
 import { readPdfMetadata, sanitizePdf } from '../src/core/engine/sanitize';
+import { addBatesNumbers } from '../src/core/engine/bates';
+import { resizePdf } from '../src/core/engine/resize';
+import { nUpPdf } from '../src/core/engine/nup';
+import { flattenPdf } from '../src/core/engine/flatten';
+import { readSignatures, removeSignatures } from '../src/core/engine/signature';
 import { parseRanges } from '../src/lib/ranges';
 
 let failures = 0;
@@ -84,6 +89,36 @@ async function main() {
   const meta = await readPdfMetadata(a.slice());
   const cleaned = await sanitizePdf(a.slice());
   check('readPdfMetadata + sanitizePdf', meta !== null && isPdf(cleaned));
+
+  // bates numbering
+  const bates = await addBatesNumbers(b.slice(), {
+    prefix: 'CASE-',
+    suffix: '',
+    start: 1,
+    digits: 6,
+    position: 'bottom-right',
+    fontSize: 9,
+    margin: 24,
+    color: { r: 0, g: 0, b: 0 },
+  });
+  check('addBatesNumbers', isPdf(bates) && (await probe(bates)).pageCount === 3);
+
+  // resize to A4
+  const resized = await resizePdf(b.slice(), { size: 'A4', mode: 'fit', orientation: 'auto' });
+  check('resizePdf to A4', isPdf(resized) && (await probe(resized)).pageCount === 3);
+
+  // n-up: 3 pages 2-up -> 2 sheets
+  const nup = await nUpPdf(b.slice(), { layout: '2' });
+  check('nUpPdf 2-up', isPdf(nup) && (await probe(nup)).pageCount === 2);
+
+  // flatten (no form -> fieldCount 0, output valid)
+  const flat = await flattenPdf(a.slice());
+  check('flattenPdf', isPdf(flat.bytes) && flat.fieldCount === 0);
+
+  // signatures (unsigned doc -> scan empty, removal no-op but valid)
+  const scan = await readSignatures(a.slice());
+  const removedRes = await removeSignatures(a.slice());
+  check('read/removeSignatures', scan.signatures.length === 0 && removedRes.removed === 0 && isPdf(removedRes.bytes));
 
   if (failures) {
     console.error(`\n${failures} engine(s) FAILED`);

@@ -18,7 +18,20 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.pdfmergely.app"
+      "package": "com.pdfmergely.app",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "category": [
+            "DEFAULT"
+          ],
+          "data": [
+            {
+              "mimeType": "application/pdf"
+            }
+          ]
+        }
+      ]
     },
     "web": {
       "output": "static",
