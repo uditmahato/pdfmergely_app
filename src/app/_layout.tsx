@@ -6,7 +6,6 @@ import * as React from 'react';
 import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useShareIntent } from 'expo-share-intent';
-import * as Linking from 'expo-linking';
 import { palette } from '@/lib/brand';
 import { stashIncoming } from '@/lib/incoming';
 import { setIncomingScreenFiles } from './incoming';
@@ -34,23 +33,9 @@ export default function RootLayout() {
     router.push('/incoming' as never);
   }, [hasShareIntent, shareIntent, resetShareIntent, router]);
 
-  // "Open with PDFMergely" (ACTION_VIEW): tapping a PDF in a file manager
-  // delivers its content:// URI as the app URL. Route it through the same
-  // incoming chooser; the tool screens read the bytes via expo-file-system,
-  // which supports content:// URIs on Android. Our own pdfmergely:// scheme
-  // URLs are ordinary navigation and must be ignored here.
-  const url = Linking.useURL();
-  const handledUrl = React.useRef<string | null>(null);
-  React.useEffect(() => {
-    if (!url || handledUrl.current === url) return;
-    if (!url.startsWith('content://') && !url.startsWith('file://')) return;
-    handledUrl.current = url;
-    const name = decodeURIComponent(url.split('/').pop() ?? 'document.pdf');
-    const file = { name: name.endsWith('.pdf') ? name : `${name}.pdf`, size: 0, uri: url };
-    stashIncoming([file]);
-    setIncomingScreenFiles([file]);
-    router.push('/incoming' as never);
-  }, [url, router]);
+  // "Open with PDFMergely" (ACTION_VIEW) is handled in +native-intent.ts:
+  // expo-router consumes the intent URL before this component ever renders,
+  // so it must be intercepted there, not with Linking.useURL() here.
 
   return (
     <>

@@ -1,5 +1,5 @@
 diff --git a/node_modules/expo-share-intent/android/src/main/java/expo/modules/shareintent/ExpoShareIntentModule.kt b/node_modules/expo-share-intent/android/src/main/java/expo/modules/shareintent/ExpoShareIntentModule.kt
-index ff5b100..e59b47c 100644
+index ff5b100..dcaf2b6 100644
 --- a/node_modules/expo-share-intent/android/src/main/java/expo/modules/shareintent/ExpoShareIntentModule.kt
 +++ b/node_modules/expo-share-intent/android/src/main/java/expo/modules/shareintent/ExpoShareIntentModule.kt
 @@ -66,13 +66,28 @@ class ExpoShareIntentModule : Module() {
@@ -37,3 +37,37 @@ index ff5b100..e59b47c 100644
  
              var mediaWidth: String? = null;
              var mediaHeight: String? = null;
+@@ -295,6 +310,12 @@ class ExpoShareIntentModule : Module() {
+             val column = "_display_name"
+             val projection = arrayOf(column)
+             var targetFile: File? = null
++            // Copy into a unique subdirectory, never straight into cacheDir:
++            // when the shared source is this app's own cache file (sharing a
++            // result back into the app to chain tools), a same-named target
++            // is the SAME file, and FileOutputStream truncates it to 0 bytes
++            // before the copy reads it.
++            val shareDir = File(context.cacheDir, "share_${Date().time}_${System.nanoTime()}")
+             try {
+                 cursor = resolver.query(uri, projection, selection, selectionArgs, null)
+                 if (cursor != null && cursor.moveToFirst()) {
+@@ -303,7 +324,7 @@ class ExpoShareIntentModule : Module() {
+                     Log.i("FileDirectory", "File name: $fileName")
+                     val safeName = fileName?.let { File(it).name }.orEmpty()
+                     if (safeName.isNotEmpty()) {
+-                        val candidate = File(context.cacheDir, safeName)
++                        val candidate = File(shareDir, safeName)
+                         val cacheRoot = context.cacheDir.canonicalPath + File.separator
+                         if (candidate.canonicalPath.startsWith(cacheRoot)) {
+                             targetFile = candidate
+@@ -323,9 +344,10 @@ class ExpoShareIntentModule : Module() {
+                     }
+                 }
+                 val type = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType)
+-                targetFile = File(context.cacheDir, "${prefix}_${Date().time}.$type")
++                targetFile = File(shareDir, "${prefix}_${Date().time}.$type")
+             }
+ 
++            targetFile.parentFile?.mkdirs()
+             resolver.openInputStream(uri)?.use { input ->
+                 FileOutputStream(targetFile).use { fileOut ->
+                     input.copyTo(fileOut)
