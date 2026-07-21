@@ -7,8 +7,11 @@ import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { palette } from '@/lib/brand';
+import { pickPdfs } from '@/lib/files';
+import { stashIncoming } from '@/lib/incoming';
 import { SECTIONS, TOOLS, type ToolDef } from '@/lib/tools';
 import { PrivacyBadge } from '@/components/ui';
+import { setIncomingScreenFiles } from './incoming';
 
 function Tile({ tool, tint }: { tool: ToolDef; tint: string }) {
   const router = useRouter();
@@ -32,27 +35,56 @@ function Tile({ tool, tint }: { tool: ToolDef; tint: string }) {
 
 export default function Home() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+
+  // File-first entry: pick the PDF(s) first, then the chooser asks what to
+  // do with them — for users who know their file but not their tool. One
+  // file offers every single-doc tool; several offer Merge.
+  async function openPdf() {
+    const picked = await pickPdfs(true);
+    if (!picked.length) return;
+    stashIncoming(picked);
+    setIncomingScreenFiles(picked);
+    router.push('/incoming' as never);
+  }
+
   return (
-    <ScrollView
-      style={styles.screen}
-      contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 24 }]}
-    >
-      <PrivacyBadge />
-      {SECTIONS.map(({ title, tint }) => (
-        <View key={title}>
-          <View style={styles.sectionRow}>
-            {/* The dot teaches the rule: this color = this category. */}
-            <View style={[styles.sectionDot, { backgroundColor: tint }]} />
-            <Text style={styles.sectionTitle}>{title}</Text>
+    <View style={styles.screen}>
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 104 }]}
+      >
+        <PrivacyBadge />
+        {SECTIONS.map(({ title, tint }) => (
+          <View key={title}>
+            <View style={styles.sectionRow}>
+              {/* The dot teaches the rule: this color = this category. */}
+              <View style={[styles.sectionDot, { backgroundColor: tint }]} />
+              <Text style={styles.sectionTitle}>{title}</Text>
+            </View>
+            <View style={styles.grid}>
+              {TOOLS.filter((t) => t.section === title).map((t) => (
+                <Tile key={t.slug} tool={t} tint={tint} />
+              ))}
+            </View>
           </View>
-          <View style={styles.grid}>
-            {TOOLS.filter((t) => t.section === title).map((t) => (
-              <Tile key={t.slug} tool={t} tint={tint} />
-            ))}
-          </View>
-        </View>
-      ))}
-    </ScrollView>
+        ))}
+      </ScrollView>
+
+      <Pressable
+        onPress={() => void openPdf()}
+        accessibilityRole="button"
+        accessibilityLabel="Open a PDF, then choose a tool"
+        android_ripple={{ color: 'rgba(255, 255, 255, 0.15)', foreground: true }}
+        style={({ pressed }) => [
+          styles.fab,
+          { bottom: insets.bottom + 20 },
+          pressed && styles.fabPressed,
+        ]}
+      >
+        <Ionicons name="document-attach" size={20} color="#ffffff" />
+        <Text style={styles.fabLabel}>Open PDF</Text>
+      </Pressable>
+    </View>
   );
 }
 
@@ -61,6 +93,25 @@ const TILE_GAP = 10;
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: palette.bg },
   content: { paddingHorizontal: 16, paddingTop: 12, gap: 4 },
+  fab: {
+    position: 'absolute',
+    right: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: palette.brandStrong,
+    borderRadius: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    overflow: 'hidden',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  fabPressed: { transform: [{ scale: 0.97 }] },
+  fabLabel: { color: '#ffffff', fontSize: 15, fontWeight: '800' },
   sectionRow: {
     flexDirection: 'row',
     alignItems: 'center',
