@@ -20,12 +20,13 @@ import { palette } from '@/lib/brand';
 import { formatBytes } from '@/lib/files';
 import { stashIncoming } from '@/lib/incoming';
 import { deleteDoc, docUri, getDoc, renameDoc } from '@/lib/library';
+import { performScan } from '@/lib/scanFlow';
 import { generateCoverThumb } from '@/lib/thumbs';
 import { BrandButton, TextField } from '@/components/ui';
 import { setIncomingScreenFiles } from '../incoming';
 
 export default function DocDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, fromScan } = useLocalSearchParams<{ id: string; fromScan?: string }>();
   const router = useRouter();
   const [version, setVersion] = React.useState(0); // bump after rename
   const doc = React.useMemo(() => (id ? getDoc(id) : undefined), [id, version]);
@@ -81,6 +82,21 @@ export default function DocDetailScreen() {
     ]);
   }
 
+  // Post-scan continuation: batch scanning is the core habit, so the screen
+  // after a scan must offer the next scan without any detours.
+  async function scanAnother() {
+    try {
+      const entry = await performScan();
+      if (entry) router.replace(`/doc/${entry.id}?fromScan=1` as never);
+    } catch {
+      Alert.alert('Scanner unavailable', 'The on-device scanner needs Google Play services.');
+    }
+  }
+
+  function backToDocs() {
+    router.dismissAll();
+  }
+
   function startRename() {
     if (!doc) return;
     setNewName(doc.name.replace(/\.pdf$/i, ''));
@@ -117,8 +133,19 @@ export default function DocDetailScreen() {
       </Text>
 
       <View style={styles.actions}>
-        <BrandButton title="Apply a tool" icon="construct" onPress={applyTool} />
-        <BrandButton title="Share / Save a copy" icon="share-outline" variant="secondary" onPress={share} />
+        {fromScan ? (
+          <>
+            <BrandButton title="Scan another document" icon="camera" onPress={() => void scanAnother()} />
+            <BrandButton title="Share / Save a copy" icon="share-outline" variant="secondary" onPress={share} />
+            <BrandButton title="All my Docs" icon="documents-outline" variant="secondary" onPress={backToDocs} />
+            <BrandButton title="Apply a tool" icon="construct" variant="secondary" onPress={applyTool} />
+          </>
+        ) : (
+          <>
+            <BrandButton title="Apply a tool" icon="construct" onPress={applyTool} />
+            <BrandButton title="Share / Save a copy" icon="share-outline" variant="secondary" onPress={share} />
+          </>
+        )}
         <View style={styles.rowActions}>
           <Pressable
             onPress={startRename}

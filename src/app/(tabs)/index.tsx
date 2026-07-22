@@ -7,20 +7,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Alert, FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import DocumentScanner from 'react-native-document-scanner-plugin';
 import { palette } from '@/lib/brand';
 import { formatBytes, pickPdfs, readBytes } from '@/lib/files';
-import { imagesToPdf } from '@/lib/imagesToPdf';
 import { docUri, listDocs, saveDoc, type DocEntry } from '@/lib/library';
 import { probe } from '@/core/engine/merge';
+import { performScan } from '@/lib/scanFlow';
 import { generateCoverThumb } from '@/lib/thumbs';
 import { PrivacyBadge } from '@/components/ui';
-
-function scanName(): string {
-  const d = new Date();
-  const p = (n: number) => String(n).padStart(2, '0');
-  return `Scan ${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}.${p(d.getMinutes())}.pdf`;
-}
 
 function Cover({ entry }: { entry: DocEntry }) {
   const [uri, setUri] = React.useState<string | null>(null);
@@ -77,16 +70,14 @@ export default function DocsScreen() {
   // The CamScanner moment, minus CamScanner: ML Kit's scanner runs entirely
   // on-device in a Play-services activity (edge detection, crop, filters,
   // multi-page), we build the PDF in JS, and it lands in the local library.
+  // fromScan=1 keeps the post-scan screen in scanning mode (Scan another).
   async function scan() {
     setBusy(true);
     try {
-      const res = await DocumentScanner.scanDocument({});
-      const images = res.scannedImages ?? [];
-      if (res.status !== 'success' || images.length === 0) return; // cancelled
-      const bytes = await imagesToPdf(images);
-      const entry = saveDoc(bytes, scanName(), { pages: images.length, source: 'scan' });
+      const entry = await performScan();
+      if (!entry) return; // cancelled
       refresh();
-      router.push(`/doc/${entry.id}` as never);
+      router.push(`/doc/${entry.id}?fromScan=1` as never);
     } catch {
       Alert.alert(
         'Scanner unavailable',
