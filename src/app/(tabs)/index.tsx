@@ -70,14 +70,13 @@ export default function DocsScreen() {
   // The CamScanner moment, minus CamScanner: ML Kit's scanner runs entirely
   // on-device in a Play-services activity (edge detection, crop, filters,
   // multi-page), we build the PDF in JS, and it lands in the local library.
-  // fromScan=1 keeps the post-scan screen in scanning mode (Scan another).
   async function scan() {
     setBusy(true);
     try {
       const entry = await performScan();
       if (!entry) return; // cancelled
       refresh();
-      router.push(`/doc/${entry.id}?fromScan=1` as never);
+      router.push(`/doc/${entry.id}` as never);
     } catch {
       Alert.alert(
         'Scanner unavailable',

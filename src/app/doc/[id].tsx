@@ -22,11 +22,11 @@ import { stashIncoming } from '@/lib/incoming';
 import { deleteDoc, docUri, getDoc, renameDoc } from '@/lib/library';
 import { performScan } from '@/lib/scanFlow';
 import { generateCoverThumb } from '@/lib/thumbs';
-import { BrandButton, TextField } from '@/components/ui';
+import { TextField } from '@/components/ui';
 import { setIncomingScreenFiles } from '../incoming';
 
 export default function DocDetailScreen() {
-  const { id, fromScan } = useLocalSearchParams<{ id: string; fromScan?: string }>();
+  const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [version, setVersion] = React.useState(0); // bump after rename
   const doc = React.useMemo(() => (id ? getDoc(id) : undefined), [id, version]);
@@ -82,19 +82,14 @@ export default function DocDetailScreen() {
     ]);
   }
 
-  // Post-scan continuation: batch scanning is the core habit, so the screen
-  // after a scan must offer the next scan without any detours.
+  // Batch scanning is the core habit: every document offers the next scan.
   async function scanAnother() {
     try {
       const entry = await performScan();
-      if (entry) router.replace(`/doc/${entry.id}?fromScan=1` as never);
+      if (entry) router.replace(`/doc/${entry.id}` as never);
     } catch {
       Alert.alert('Scanner unavailable', 'The on-device scanner needs Google Play services.');
     }
-  }
-
-  function backToDocs() {
-    router.dismissAll();
   }
 
   function startRename() {
@@ -110,60 +105,52 @@ export default function DocDetailScreen() {
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Stack.Screen options={{ title: doc.name }} />
+    <View style={styles.screen}>
+      {/* Rename lives ON the title, CamScanner-style: the name is the
+          tappable thing, not a separate button further down. */}
+      <Stack.Screen
+        options={{
+          headerTitle: () => (
+            <Pressable
+              onPress={startRename}
+              accessibilityRole="button"
+              accessibilityLabel={`Rename ${doc.name}`}
+              hitSlop={8}
+              style={styles.titleWrap}
+            >
+              <Text style={styles.titleText} numberOfLines={1}>
+                {doc.name}
+              </Text>
+              <Ionicons name="pencil" size={15} color={palette.muted} />
+            </Pressable>
+          ),
+        }}
+      />
 
-      <View style={styles.coverWrap}>
-        {cover ? (
-          <Image source={{ uri: cover }} style={styles.cover} resizeMode="contain" />
-        ) : (
-          <View style={[styles.cover, styles.coverFallback]}>
-            <Ionicons name="document-text" size={40} color={palette.danger} />
-          </View>
-        )}
-      </View>
-
-      <Text style={styles.name} numberOfLines={2}>
-        {doc.name}
-      </Text>
-      <Text style={styles.meta}>
-        {doc.pages > 0 ? `${doc.pages} page${doc.pages === 1 ? '' : 's'} · ` : ''}
-        {formatBytes(doc.size)} · saved {new Date(doc.createdAt).toLocaleDateString()} · stored
-        on this phone
-      </Text>
-
-      <View style={styles.actions}>
-        {fromScan ? (
-          <>
-            <BrandButton title="Scan another document" icon="camera" onPress={() => void scanAnother()} />
-            <BrandButton title="Share / Save a copy" icon="share-outline" variant="secondary" onPress={share} />
-            <BrandButton title="All my Docs" icon="documents-outline" variant="secondary" onPress={backToDocs} />
-            <BrandButton title="Apply a tool" icon="construct" variant="secondary" onPress={applyTool} />
-          </>
-        ) : (
-          <>
-            <BrandButton title="Apply a tool" icon="construct" onPress={applyTool} />
-            <BrandButton title="Share / Save a copy" icon="share-outline" variant="secondary" onPress={share} />
-          </>
-        )}
-        <View style={styles.rowActions}>
-          <Pressable
-            onPress={startRename}
-            accessibilityRole="button"
-            style={({ pressed }) => [styles.smallBtn, pressed && styles.pressed]}
-          >
-            <Ionicons name="pencil" size={16} color={palette.foreground} />
-            <Text style={styles.smallBtnText}>Rename</Text>
-          </Pressable>
-          <Pressable
-            onPress={confirmDelete}
-            accessibilityRole="button"
-            style={({ pressed }) => [styles.smallBtn, styles.dangerBtn, pressed && styles.pressed]}
-          >
-            <Ionicons name="trash" size={16} color={palette.danger} />
-            <Text style={[styles.smallBtnText, { color: palette.danger }]}>Delete</Text>
-          </Pressable>
+      <ScrollView contentContainerStyle={styles.content}>
+        <View style={styles.coverWrap}>
+          {cover ? (
+            <Image source={{ uri: cover }} style={styles.cover} resizeMode="contain" />
+          ) : (
+            <View style={[styles.cover, styles.coverFallback]}>
+              <Ionicons name="document-text" size={40} color={palette.danger} />
+            </View>
+          )}
         </View>
+
+        <Text style={styles.meta}>
+          {doc.pages > 0 ? `${doc.pages} page${doc.pages === 1 ? '' : 's'} · ` : ''}
+          {formatBytes(doc.size)} · saved {new Date(doc.createdAt).toLocaleDateString()} · stored
+          on this phone
+        </Text>
+      </ScrollView>
+
+      {/* One toolbar, four actions — no button pile. */}
+      <View style={styles.toolbar}>
+        <ToolbarAction icon="camera" label="Scan" onPress={() => void scanAnother()} />
+        <ToolbarAction icon="construct-outline" label="Tool" onPress={applyTool} />
+        <ToolbarAction icon="share-outline" label="Share" onPress={share} />
+        <ToolbarAction icon="trash-outline" label="Delete" tint={palette.danger} onPress={confirmDelete} />
       </View>
 
       <Modal visible={renaming} transparent animationType="fade" onRequestClose={() => setRenaming(false)}>
@@ -188,7 +175,32 @@ export default function DocDetailScreen() {
           </View>
         </View>
       </Modal>
-    </ScrollView>
+    </View>
+  );
+}
+
+function ToolbarAction({
+  icon,
+  label,
+  onPress,
+  tint = palette.foreground,
+}: {
+  icon: React.ComponentProps<typeof Ionicons>['name'];
+  label: string;
+  onPress: () => void;
+  tint?: string;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      android_ripple={{ color: 'rgba(255, 255, 255, 0.08)', foreground: true }}
+      style={({ pressed }) => [styles.toolbarAction, pressed && styles.pressed]}
+    >
+      <Ionicons name={icon} size={21} color={tint} />
+      <Text style={[styles.toolbarLabel, { color: tint }]}>{label}</Text>
+    </Pressable>
   );
 }
 
@@ -196,11 +208,13 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: palette.bg },
   center: { alignItems: 'center', justifyContent: 'center', padding: 24 },
   missing: { color: palette.muted, fontSize: 14, textAlign: 'center' },
-  content: { padding: 16, gap: 10 },
-  coverWrap: { alignItems: 'center', paddingVertical: 8 },
+  content: { padding: 16, gap: 12 },
+  titleWrap: { flexDirection: 'row', alignItems: 'center', gap: 7, maxWidth: 280 },
+  titleText: { color: palette.foreground, fontSize: 17, fontWeight: '700', flexShrink: 1 },
+  coverWrap: { alignItems: 'center', paddingVertical: 10 },
   cover: {
-    height: 300,
-    width: 225,
+    height: 380,
+    width: 285,
     borderRadius: 12,
     backgroundColor: '#ffffff',
   },
@@ -209,10 +223,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'rgba(248, 113, 113, 0.12)',
   },
-  name: { color: palette.foreground, fontSize: 18, fontWeight: '800', textAlign: 'center' },
   meta: { color: palette.muted, fontSize: 12, textAlign: 'center' },
-  actions: { gap: 8, paddingTop: 10 },
-  rowActions: { flexDirection: 'row', gap: 8, justifyContent: 'center', paddingTop: 4 },
+  toolbar: {
+    flexDirection: 'row',
+    borderTopWidth: 1,
+    borderTopColor: palette.border,
+    backgroundColor: palette.bg,
+    paddingVertical: 6,
+    paddingBottom: 14,
+  },
+  toolbarAction: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 8,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  toolbarLabel: { fontSize: 11, fontWeight: '600' },
   smallBtn: {
     flexDirection: 'row',
     alignItems: 'center',
