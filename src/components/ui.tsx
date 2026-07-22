@@ -187,7 +187,7 @@ export function SuccessCard({
         <BrandButton title="Share / Save" icon="share-outline" onPress={onShareAgain} />
         <BrandButton title="Start over" icon="refresh" variant="secondary" onPress={onReset} />
       </View>
-      <Text style={styles.successNote}>Built on your device. Nothing was uploaded.</Text>
+      <Text style={styles.successNote}>Saved to your Docs · built on this phone, never uploaded.</Text>
     </View>
   );
 }

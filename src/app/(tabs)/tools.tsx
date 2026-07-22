@@ -11,7 +11,7 @@ import { pickPdfs } from '@/lib/files';
 import { stashIncoming } from '@/lib/incoming';
 import { SECTIONS, TOOLS, type ToolDef } from '@/lib/tools';
 import { PrivacyBadge } from '@/components/ui';
-import { setIncomingScreenFiles } from './incoming';
+import { setIncomingScreenFiles } from '../incoming';
 
 function Tile({ tool, tint }: { tool: ToolDef; tint: string }) {
   const router = useRouter();

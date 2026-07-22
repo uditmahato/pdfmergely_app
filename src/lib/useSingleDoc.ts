@@ -7,6 +7,7 @@ import { probe } from '@/core/engine/merge';
 import { PdfError } from '@/core/types';
 import { pickPdfs, readBytes, shareResult, type PickedPdf } from '@/lib/files';
 import { takeIncomingSingle } from '@/lib/incoming';
+import { saveDoc } from '@/lib/library';
 
 export interface SingleDocState {
   file: PickedPdf | null;
@@ -83,9 +84,15 @@ export function useSingleDoc(): SingleDocState {
       try {
         const out = await fn(bytes.slice());
         resultRef.current = out;
-        // Show the success card and stop: opening the share sheet here would
-        // cover the card before the user reads it. Sharing is the card's
-        // explicit "Share / Save" action (shareAgain).
+        // Results persist in the local library ("everything stays in the
+        // app"); sharing is the success card's optional explicit action.
+        let pages = 0;
+        try {
+          pages = (await probe(out.bytes.slice())).pageCount;
+        } catch {
+          // Encrypted outputs (Protect) resist probing; store with 0 pages.
+        }
+        saveDoc(out.bytes, out.filename, { pages, source: 'tool' });
         setDone({ filename: out.filename, size: out.bytes.byteLength });
       } catch (e) {
         setError(friendly(e));

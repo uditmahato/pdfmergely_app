@@ -21,3 +21,12 @@ export async function generateAllThumbs(fileUri: string, quality = 60): Promise<
     return [];
   }
 }
+
+/** First-page thumbnail for library rows; null when rendering fails. */
+export async function generateCoverThumb(fileUri: string, quality = 50): Promise<PageThumb | null> {
+  try {
+    return await PdfThumbnail.generate(fileUri, 0, quality);
+  } catch {
+    return null;
+  }
+}

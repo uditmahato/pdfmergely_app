@@ -6,6 +6,7 @@ import { Field, TextField } from '@/components/ui';
 import { split, type SplitOutput } from '@/core/engine/split';
 import { parseRanges } from '@/lib/ranges';
 import { formatBytes, shareResult } from '@/lib/files';
+import { saveDoc } from '@/lib/library';
 import { useSingleDoc } from '@/lib/useSingleDoc';
 import { palette } from '@/lib/brand';
 
@@ -18,10 +19,14 @@ export default function SplitScreen() {
 
   async function run() {
     // Unlike single-output tools, split produces N files: show a results list
-    // with a share button per file instead of auto-opening one share sheet.
+    // with a share button per file. doc.run saves part 1 to the library; the
+    // remaining parts are saved here so ALL of them land in Docs.
     await doc.run(async (bytes) => {
       const out = await split(bytes, groups);
       setParts(out);
+      for (const part of out.slice(1)) {
+        saveDoc(part.bytes, part.name, { pages: 0, source: 'tool' });
+      }
       return { bytes: out[0].bytes, filename: out[0].name };
     });
   }

@@ -2,9 +2,10 @@ import * as React from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { merge } from '@/core/engine/merge';
+import { merge, probe } from '@/core/engine/merge';
 import { PdfError } from '@/core/types';
 import { formatBytes, pickPdfs, readBytes, shareResult, type PickedPdf } from '@/lib/files';
+import { saveDoc } from '@/lib/library';
 import { takeIncomingAll } from '@/lib/incoming';
 import { palette } from '@/lib/brand';
 import { BrandButton, BusyNote, ErrorNote, IconButton, PrivacyBadge, SuccessCard } from '@/components/ui';
@@ -70,7 +71,14 @@ export default function MergeScreen() {
       }
       const out = await merge(sources);
       resultRef.current = { bytes: out, filename: 'merged.pdf' };
-      // Success card first; the sheet opens from its "Share / Save" button.
+      // Persist into the local library; sharing stays optional.
+      let pages = 0;
+      try {
+        pages = (await probe(out.slice())).pageCount;
+      } catch {
+        // Store with unknown page count rather than failing the merge.
+      }
+      saveDoc(out, 'merged.pdf', { pages, source: 'tool' });
       setDone({ filename: 'merged.pdf', size: out.byteLength });
     } catch (e) {
       setError(

@@ -3,7 +3,7 @@
 import 'react-native-get-random-values';
 
 import * as React from 'react';
-import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Animated, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -86,30 +86,9 @@ export default function RootLayout() {
           contentStyle: { backgroundColor: palette.bg },
         }}
       >
-        <Stack.Screen
-          name="index"
-          options={{
-            title: 'PDFMergely',
-            // About lives in the app bar, where apps keep it — not as a
-            // grid tile among the tools.
-            headerRight: () => (
-              <Pressable
-                onPress={() => router.push('/about' as never)}
-                accessibilityRole="button"
-                accessibilityLabel="About PDFMergely"
-                hitSlop={8}
-              >
-                {({ pressed }) => (
-                  <Ionicons
-                    name="information-circle-outline"
-                    size={24}
-                    color={pressed ? palette.muted : palette.foreground}
-                  />
-                )}
-              </Pressable>
-            ),
-          }}
-        />
+        {/* The tab navigator (Docs / Tools / About) draws its own headers. */}
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="doc/[id]" options={{ title: 'Document' }} />
         {/* Neutral title: this screen serves share-sheet arrivals, "Open
             with", and the in-app Open PDF button alike. */}
         <Stack.Screen name="incoming" options={{ title: 'Choose a tool' }} />
@@ -118,7 +97,6 @@ export default function RootLayout() {
         {TOOLS.map((t) => (
           <Stack.Screen key={t.slug} name={t.slug} options={{ title: t.name }} />
         ))}
-        <Stack.Screen name="about" options={{ title: 'About' }} />
       </Stack>
       {!splashDone && <BrandedSplash onDone={finishSplash} />}
     </View>
