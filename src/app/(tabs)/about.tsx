@@ -7,7 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import * as Linking from 'expo-linking';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { palette } from '@/lib/brand';
+import { palette, type } from '@/lib/brand';
 import { TOOLS } from '@/lib/tools';
 
 type IconName = keyof typeof Ionicons.glyphMap;
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     backgroundColor: palette.brandSoft,
     marginBottom: 6,
   },
-  appName: { color: palette.foreground, fontSize: 20, fontWeight: '800' },
+  appName: { color: palette.foreground, fontSize: 21, fontFamily: type.display },
   version: { color: palette.muted, fontSize: 13 },
   promiseBox: {
     backgroundColor: palette.brandSoft,
@@ -152,13 +152,13 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 6,
   },
-  promiseTitle: { color: palette.foreground, fontSize: 15, fontWeight: '800' },
+  promiseTitle: { color: palette.foreground, fontSize: 15, fontFamily: type.display },
   promiseText: { color: 'hsl(210, 30%, 85%)', fontSize: 13, lineHeight: 19 },
   group: { gap: 8 },
   groupHeading: {
     color: palette.muted,
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: type.semibold,
     letterSpacing: 0.3,
     textTransform: 'uppercase',
     paddingTop: 8,
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     backgroundColor: palette.brandSoft,
   },
   linkBody: { flex: 1, gap: 1 },
-  linkTitle: { color: palette.foreground, fontSize: 15, fontWeight: '700' },
+  linkTitle: { color: palette.foreground, fontSize: 15, fontFamily: type.semibold },
   linkSub: { color: palette.muted, fontSize: 12 },
   footnote: {
     color: palette.muted,

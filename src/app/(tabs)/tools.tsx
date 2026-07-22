@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { palette } from '@/lib/brand';
+import { palette, type } from '@/lib/brand';
 import { pickPdfs } from '@/lib/files';
 import { stashIncoming } from '@/lib/incoming';
 import { SECTIONS, TOOLS, type ToolDef } from '@/lib/tools';
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
   },
   fabPressed: { transform: [{ scale: 0.97 }] },
-  fabLabel: { color: '#ffffff', fontSize: 15, fontWeight: '800' },
+  fabLabel: { color: '#ffffff', fontSize: 15, fontFamily: type.bold },
   sectionRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -122,8 +122,8 @@ const styles = StyleSheet.create({
   sectionDot: { height: 7, width: 7, borderRadius: 4 },
   sectionTitle: {
     color: palette.muted,
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 12.5,
+    fontFamily: type.semibold,
     letterSpacing: 0.3,
     textTransform: 'uppercase',
   },
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
   tileLabel: {
     color: palette.foreground,
     fontSize: 13,
-    fontWeight: '600',
+    fontFamily: type.medium,
     textAlign: 'center',
     lineHeight: 17,
   },

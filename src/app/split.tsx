@@ -8,7 +8,7 @@ import { parseRanges } from '@/lib/ranges';
 import { formatBytes, shareResult } from '@/lib/files';
 import { saveDoc } from '@/lib/library';
 import { useSingleDoc } from '@/lib/useSingleDoc';
-import { palette } from '@/lib/brand';
+import { palette, type } from '@/lib/brand';
 
 export default function SplitScreen() {
   const doc = useSingleDoc();
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   hint: { color: palette.muted, fontSize: 12, lineHeight: 18 },
   resultsScreen: { flex: 1, backgroundColor: palette.bg, padding: 16, gap: 8 },
   resultsHead: { alignItems: 'center', gap: 4, paddingVertical: 18 },
-  resultsTitle: { color: palette.foreground, fontSize: 18, fontWeight: '800' },
+  resultsTitle: { color: palette.foreground, fontSize: 18, fontFamily: type.display },
   resultsSub: { color: palette.muted, fontSize: 13 },
   partRow: {
     flexDirection: 'row',
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(248, 113, 113, 0.12)',
   },
   partBody: { flex: 1, gap: 2 },
-  partName: { color: palette.foreground, fontSize: 14, fontWeight: '600' },
+  partName: { color: palette.foreground, fontSize: 14, fontFamily: type.semibold },
   partMeta: { color: palette.muted, fontSize: 12 },
   shareBtn: {
     flexDirection: 'row',
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 9,
   },
-  shareText: { color: '#ffffff', fontWeight: '700', fontSize: 13 },
+  shareText: { color: '#ffffff', fontFamily: type.semibold, fontSize: 13 },
   startOver: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -161,6 +161,6 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingVertical: 13,
   },
-  startOverText: { color: palette.foreground, fontWeight: '700', fontSize: 14 },
+  startOverText: { color: palette.foreground, fontFamily: type.semibold, fontSize: 14 },
   pressed: { opacity: 0.85 },
 });

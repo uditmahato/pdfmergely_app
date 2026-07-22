@@ -11,8 +11,9 @@ import {
   type TextInputProps,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
-import { palette } from '@/lib/brand';
+import { brandGlow, brandGradient, palette, radius, type } from '@/lib/brand';
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
@@ -29,22 +30,8 @@ export function BrandButton({
   icon?: IconName;
   variant?: 'primary' | 'secondary';
 }) {
-  return (
-    <Pressable
-      onPress={() => {
-        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        onPress();
-      }}
-      disabled={disabled}
-      accessibilityRole="button"
-      accessibilityState={{ disabled: !!disabled }}
-      style={({ pressed }) => [
-        styles.btn,
-        variant === 'primary' ? styles.btnPrimary : styles.btnSecondary,
-        disabled && styles.btnDisabled,
-        pressed && styles.pressed,
-      ]}
-    >
+  const inner = (
+    <>
       {icon && (
         <Ionicons
           name={icon}
@@ -55,6 +42,38 @@ export function BrandButton({
       <Text style={variant === 'primary' ? styles.btnPrimaryText : styles.btnSecondaryText}>
         {title}
       </Text>
+    </>
+  );
+  return (
+    <Pressable
+      onPress={() => {
+        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        onPress();
+      }}
+      disabled={disabled}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: !!disabled }}
+      android_ripple={{ color: 'rgba(255, 255, 255, 0.12)', foreground: true }}
+      style={({ pressed }) => [
+        styles.btnShell,
+        variant === 'primary' && !disabled && styles.btnGlow,
+        variant === 'secondary' && styles.btnSecondary,
+        disabled && styles.btnDisabled,
+        pressed && styles.pressed,
+      ]}
+    >
+      {variant === 'primary' ? (
+        <LinearGradient
+          colors={[...brandGradient]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.btnGradient}
+        >
+          {inner}
+        </LinearGradient>
+      ) : (
+        <View style={styles.btnGradient}>{inner}</View>
+      )}
     </Pressable>
   );
 }
@@ -81,6 +100,7 @@ export function IconButton({
       accessibilityLabel={label}
       accessibilityState={{ disabled: !!disabled }}
       hitSlop={4}
+      android_ripple={{ color: 'rgba(255, 255, 255, 0.08)', foreground: true }}
       style={({ pressed }) => [styles.iconBtn, disabled && styles.btnDisabled, pressed && styles.pressed]}
     >
       <Ionicons name={icon} size={18} color={tint} />
@@ -133,8 +153,10 @@ export function Segmented<T extends string>({
 export function PrivacyBadge() {
   return (
     <View style={styles.privacyRow}>
-      <Ionicons name="shield-checkmark" size={13} color={palette.brand} />
-      <Text style={styles.privacy}>On-device only · No upload · Free</Text>
+      <View style={styles.privacyChip}>
+        <Ionicons name="shield-checkmark" size={12} color={palette.brand} />
+        <Text style={styles.privacy}>On-device only · No upload · Free</Text>
+      </View>
     </View>
   );
 }
@@ -176,7 +198,7 @@ export function SuccessCard({
   return (
     <View style={styles.success}>
       <View style={styles.successIcon}>
-        <Ionicons name="checkmark-circle" size={40} color={palette.brand} />
+        <Ionicons name="checkmark-circle" size={44} color={palette.brand} />
       </View>
       <Text style={styles.successTitle}>Your file is ready</Text>
       <Text style={styles.successMeta}>
@@ -193,58 +215,84 @@ export function SuccessCard({
 }
 
 const styles = StyleSheet.create({
-  btn: {
+  btnShell: {
+    borderRadius: radius.md,
+    overflow: 'hidden',
+  },
+  btnGlow: { ...brandGlow },
+  btnGradient: {
     flexDirection: 'row',
     gap: 8,
-    borderRadius: 14,
     paddingVertical: 15,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  btnPrimary: { backgroundColor: palette.brandStrong },
-  btnSecondary: { backgroundColor: palette.surface2, borderWidth: 1, borderColor: palette.border },
-  btnDisabled: { opacity: 0.45 },
-  btnPrimaryText: { color: '#ffffff', fontWeight: '800', fontSize: 16 },
-  btnSecondaryText: { color: palette.foreground, fontWeight: '700', fontSize: 15 },
-  pressed: { opacity: 0.85 },
-  iconBtn: {
-    height: 44,
-    width: 44,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+  btnSecondary: {
     backgroundColor: palette.surface2,
     borderWidth: 1,
     borderColor: palette.border,
   },
-  field: { gap: 6 },
-  fieldLabel: { color: palette.muted, fontSize: 13, fontWeight: '600' },
+  btnDisabled: { opacity: 0.45 },
+  btnPrimaryText: { color: '#ffffff', fontFamily: type.bold, fontSize: 16 },
+  btnSecondaryText: { color: palette.foreground, fontFamily: type.semibold, fontSize: 15 },
+  pressed: { opacity: 0.9 },
+  iconBtn: {
+    height: 44,
+    width: 44,
+    borderRadius: radius.sm + 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: palette.surface3,
+    borderWidth: 1,
+    borderColor: palette.borderSoft,
+    overflow: 'hidden',
+  },
+  field: { gap: 7 },
+  fieldLabel: {
+    color: palette.muted,
+    fontSize: 12,
+    fontFamily: type.semibold,
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+  },
   input: {
     backgroundColor: palette.surface,
     borderColor: palette.border,
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: radius.sm + 2,
     paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingVertical: 13,
     color: palette.foreground,
     fontSize: 15,
+    fontFamily: type.medium,
   },
   seg: {
     flexDirection: 'row',
     backgroundColor: palette.surface,
-    borderRadius: 12,
+    borderRadius: radius.sm + 2,
     borderWidth: 1,
-    borderColor: palette.border,
+    borderColor: palette.borderSoft,
     padding: 3,
     gap: 3,
   },
   // paddingVertical 13 puts the row at ~44dp, the minimum comfortable target.
-  segItem: { flex: 1, paddingVertical: 13, borderRadius: 9, alignItems: 'center' },
+  segItem: { flex: 1, paddingVertical: 13, borderRadius: radius.sm, alignItems: 'center' },
   segItemActive: { backgroundColor: palette.brandSoft },
-  segText: { color: palette.muted, fontSize: 13, fontWeight: '600' },
+  segText: { color: palette.muted, fontSize: 13, fontFamily: type.semibold },
   segTextActive: { color: palette.brand },
-  privacyRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },
-  privacy: { color: palette.brand, fontSize: 12, fontWeight: '600' },
+  privacyRow: { alignItems: 'center' },
+  privacyChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'hsla(160, 60%, 16%, 0.55)',
+    borderColor: 'hsla(160, 60%, 30%, 0.5)',
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+  },
+  privacy: { color: palette.brand, fontSize: 11.5, fontFamily: type.semibold },
   busyBox: {
     flexDirection: 'row',
     gap: 10,
@@ -252,7 +300,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 16,
   },
-  busyText: { color: palette.foreground, fontSize: 14 },
+  busyText: { color: palette.foreground, fontSize: 14, fontFamily: type.medium },
   errorBox: {
     flexDirection: 'row',
     gap: 8,
@@ -260,25 +308,25 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(248, 113, 113, 0.1)',
     borderColor: 'rgba(248, 113, 113, 0.3)',
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: radius.sm + 2,
     paddingHorizontal: 12,
     paddingVertical: 10,
   },
-  error: { color: palette.danger, fontSize: 13, flex: 1 },
+  error: { color: palette.danger, fontSize: 13, fontFamily: type.medium, flex: 1 },
   success: {
     backgroundColor: palette.brandSoft,
-    borderColor: palette.brand,
+    borderColor: 'hsla(160, 70%, 40%, 0.55)',
     borderWidth: 1,
-    borderRadius: 20,
-    padding: 20,
+    borderRadius: radius.xl,
+    padding: 22,
     gap: 10,
     alignItems: 'center',
+    ...brandGlow,
+    shadowOpacity: 0.25,
   },
   successIcon: { paddingBottom: 2 },
-  successTitle: { color: palette.foreground, fontSize: 18, fontWeight: '800' },
-  // Lighter than `muted`: on the green-tinted card the gray-blue muted tone
-  // sits near the AA contrast floor.
-  successMeta: { color: 'hsl(210, 30%, 85%)', fontSize: 13 },
-  successActions: { alignSelf: 'stretch', gap: 8, paddingTop: 6 },
-  successNote: { color: palette.muted, fontSize: 11, paddingTop: 2 },
+  successTitle: { color: palette.foreground, fontSize: 19, fontFamily: type.display },
+  successMeta: { color: 'hsl(210, 30%, 85%)', fontSize: 13, fontFamily: type.medium },
+  successActions: { alignSelf: 'stretch', gap: 8, paddingTop: 8 },
+  successNote: { color: palette.muted, fontSize: 11, fontFamily: type.regular, paddingTop: 2 },
 });

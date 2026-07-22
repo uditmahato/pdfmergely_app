@@ -9,26 +9,36 @@ import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { useShareIntent } from 'expo-share-intent';
-import { palette } from '@/lib/brand';
+import {
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+  useFonts,
+} from '@expo-google-fonts/inter';
+import { SpaceGrotesk_500Medium, SpaceGrotesk_700Bold } from '@expo-google-fonts/space-grotesk';
+import { palette, type } from '@/lib/brand';
 import { stashIncoming } from '@/lib/incoming';
 import { TOOLS } from '@/lib/tools';
 import { setIncomingScreenFiles } from './incoming';
 
 // Android 12+ clips the OS splash to a circle, so it can only ever show the
 // logo. The wordmark lives in this branded frame that continues the splash:
-// OS splash (logo) -> this view (logo + name) -> home.
+// OS splash (logo) -> this view (logo + name) -> home. It also covers font
+// loading, so no screen ever renders in the fallback system font.
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
-function BrandedSplash({ onDone }: { onDone: () => void }) {
+function BrandedSplash({ ready, onDone }: { ready: boolean; onDone: () => void }) {
   const opacity = React.useRef(new Animated.Value(1)).current;
 
   React.useEffect(() => {
+    if (!ready) return;
     SplashScreen.hideAsync().catch(() => {});
     const t = setTimeout(() => {
       Animated.timing(opacity, { toValue: 0, duration: 280, useNativeDriver: true }).start(onDone);
-    }, 900);
+    }, 850);
     return () => clearTimeout(t);
-  }, [opacity, onDone]);
+  }, [ready, opacity, onDone]);
 
   return (
     <Animated.View pointerEvents="none" style={[styles.splash, { opacity }]}>
@@ -44,11 +54,20 @@ function BrandedSplash({ onDone }: { onDone: () => void }) {
 export default function RootLayout() {
   const router = useRouter();
   const { hasShareIntent, shareIntent, resetShareIntent } = useShareIntent();
+  const [fontsLoaded] = useFonts({
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
+    SpaceGrotesk_500Medium,
+    SpaceGrotesk_700Bold,
+  });
 
   // "Share PDF -> PDFMergely": the share-intent module copies the files into
   // app-private storage; we stash them and route to the tool chooser. PDFs
   // only (the intent filters ask Android for application/pdf, but be safe).
   React.useEffect(() => {
+    if (!fontsLoaded) return; // navigator not mounted yet
     if (!hasShareIntent || !shareIntent.files?.length) return;
     const pdfs = shareIntent.files
       .filter((f) => f.mimeType === 'application/pdf' || f.fileName.toLowerCase().endsWith('.pdf'))
@@ -62,7 +81,7 @@ export default function RootLayout() {
     stashIncoming(pdfs);
     setIncomingScreenFiles(pdfs);
     router.push('/incoming' as never);
-  }, [hasShareIntent, shareIntent, resetShareIntent, router]);
+  }, [fontsLoaded, hasShareIntent, shareIntent, resetShareIntent, router]);
 
   // "Open with PDFMergely" (ACTION_VIEW) is handled in +native-intent.ts:
   // expo-router consumes the intent URL before this component ever renders,
@@ -70,6 +89,17 @@ export default function RootLayout() {
 
   const [splashDone, setSplashDone] = React.useState(false);
   const finishSplash = React.useCallback(() => setSplashDone(true), []);
+
+  // Nothing mounts until fonts are ready: text measured with the fallback
+  // font keeps its too-narrow layout after the swap and truncates the last
+  // character everywhere. The splash covers this window anyway.
+  if (!fontsLoaded) {
+    return (
+      <View style={styles.root}>
+        <StatusBar style="light" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.root}>
@@ -82,7 +112,7 @@ export default function RootLayout() {
           headerStyle: { backgroundColor: palette.bg },
           headerShadowVisible: false,
           headerTintColor: palette.foreground,
-          headerTitleStyle: { fontWeight: '700' },
+          headerTitleStyle: { fontFamily: type.display, fontSize: 19 },
           contentStyle: { backgroundColor: palette.bg },
         }}
       >
@@ -98,7 +128,7 @@ export default function RootLayout() {
           <Stack.Screen key={t.slug} name={t.slug} options={{ title: t.name }} />
         ))}
       </Stack>
-      {!splashDone && <BrandedSplash onDone={finishSplash} />}
+      {!splashDone && <BrandedSplash ready={fontsLoaded} onDone={finishSplash} />}
     </View>
   );
 }
@@ -125,6 +155,6 @@ const styles = StyleSheet.create({
     backgroundColor: palette.brandSoft,
     marginBottom: 10,
   },
-  splashName: { color: palette.foreground, fontSize: 26, fontWeight: '800', letterSpacing: 0.3 },
-  splashTagline: { color: palette.muted, fontSize: 14 },
+  splashName: { color: palette.foreground, fontSize: 27, fontFamily: type.display, letterSpacing: 0.3 },
+  splashTagline: { color: palette.muted, fontSize: 14, fontFamily: type.regular },
 });

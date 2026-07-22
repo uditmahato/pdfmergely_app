@@ -5,7 +5,7 @@ import { Field, Segmented, TextField } from '@/components/ui';
 import { addBatesNumbers } from '@/core/engine/bates';
 import type { NumberPosition } from '@/core/engine/pageNumbers';
 import { useSingleDoc } from '@/lib/useSingleDoc';
-import { palette } from '@/lib/brand';
+import { palette, type } from '@/lib/brand';
 
 type DigitsChoice = '4' | '6' | '8';
 
@@ -89,5 +89,5 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: 12 },
   half: { flex: 1 },
   preview: { color: palette.muted, fontSize: 13 },
-  previewMono: { color: palette.brand, fontWeight: '700' },
+  previewMono: { color: palette.brand, fontFamily: type.bold },
 });

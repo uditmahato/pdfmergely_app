@@ -7,7 +7,7 @@ import { PdfError } from '@/core/types';
 import { formatBytes, pickPdfs, readBytes, shareResult, type PickedPdf } from '@/lib/files';
 import { saveDoc } from '@/lib/library';
 import { takeIncomingAll } from '@/lib/incoming';
-import { palette } from '@/lib/brand';
+import { palette, type } from '@/lib/brand';
 import { BrandButton, BusyNote, ErrorNote, IconButton, PrivacyBadge, SuccessCard } from '@/components/ui';
 
 interface Item extends PickedPdf {
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
     backgroundColor: palette.brandSoft,
     marginBottom: 2,
   },
-  addText: { color: palette.foreground, fontWeight: '800', fontSize: 16 },
+  addText: { color: palette.foreground, fontFamily: type.display, fontSize: 16 },
   addSub: { color: palette.muted, fontSize: 12 },
   pressed: { opacity: 0.85 },
   row: {
@@ -223,9 +223,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: palette.brandSoft,
   },
-  badgeText: { color: palette.brand, fontSize: 12, fontWeight: '800' },
+  badgeText: { color: palette.brand, fontSize: 12, fontFamily: type.bold },
   rowBody: { flex: 1, gap: 2 },
-  rowName: { color: palette.foreground, fontSize: 14, fontWeight: '600' },
+  rowName: { color: palette.foreground, fontSize: 14, fontFamily: type.semibold },
   rowSize: { color: palette.muted, fontSize: 12 },
   // Sits directly under the dropzone, not floating mid-screen.
   empty: { color: palette.muted, paddingTop: 2, lineHeight: 20, fontSize: 13 },

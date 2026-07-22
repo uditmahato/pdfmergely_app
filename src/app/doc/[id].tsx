@@ -16,7 +16,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { palette } from '@/lib/brand';
+import { palette, type } from '@/lib/brand';
 import { formatBytes } from '@/lib/files';
 import { stashIncoming } from '@/lib/incoming';
 import { deleteDoc, docUri, getDoc, renameDoc } from '@/lib/library';
@@ -207,10 +207,10 @@ function ToolbarAction({
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: palette.bg },
   center: { alignItems: 'center', justifyContent: 'center', padding: 24 },
-  missing: { color: palette.muted, fontSize: 14, textAlign: 'center' },
+  missing: { color: palette.muted, fontSize: 14, fontFamily: type.regular, textAlign: 'center' },
   content: { padding: 16, gap: 12 },
   titleWrap: { flexDirection: 'row', alignItems: 'center', gap: 7, maxWidth: 280 },
-  titleText: { color: palette.foreground, fontSize: 17, fontWeight: '700', flexShrink: 1 },
+  titleText: { color: palette.foreground, fontSize: 17, fontFamily: type.display, flexShrink: 1 },
   coverWrap: { alignItems: 'center', paddingVertical: 10 },
   cover: {
     height: 380,
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'rgba(248, 113, 113, 0.12)',
   },
-  meta: { color: palette.muted, fontSize: 12, textAlign: 'center' },
+  meta: { color: palette.muted, fontSize: 12, fontFamily: type.regular, textAlign: 'center' },
   toolbar: {
     flexDirection: 'row',
     borderTopWidth: 1,
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
   },
-  toolbarLabel: { fontSize: 11, fontWeight: '600' },
+  toolbarLabel: { fontSize: 11, fontFamily: type.semibold },
   smallBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
   },
   dangerBtn: { borderColor: 'rgba(248, 113, 113, 0.35)' },
   confirmBtn: { backgroundColor: palette.brandStrong, borderColor: palette.brandStrong },
-  smallBtnText: { color: palette.foreground, fontSize: 13, fontWeight: '700' },
+  smallBtnText: { color: palette.foreground, fontSize: 13, fontFamily: type.semibold },
   pressed: { opacity: 0.85 },
   modalScrim: {
     flex: 1,
@@ -272,6 +272,6 @@ const styles = StyleSheet.create({
     padding: 18,
     gap: 12,
   },
-  modalTitle: { color: palette.foreground, fontSize: 16, fontWeight: '800' },
+  modalTitle: { color: palette.foreground, fontSize: 16, fontFamily: type.display },
   modalActions: { flexDirection: 'row', gap: 8, justifyContent: 'flex-end' },
 });

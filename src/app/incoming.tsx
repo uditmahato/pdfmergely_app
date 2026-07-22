@@ -5,7 +5,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { palette } from '@/lib/brand';
+import { palette, type } from '@/lib/brand';
 import { formatBytes, type PickedPdf } from '@/lib/files';
 import { MERGE_TOOL, SINGLE_TOOLS, sectionTint, type ToolDef } from '@/lib/tools';
 import { PrivacyBadge } from '@/components/ui';
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   fileBody: { flex: 1, gap: 4 },
-  fileName: { color: palette.foreground, fontSize: 14, fontWeight: '600' },
+  fileName: { color: palette.foreground, fontSize: 14, fontFamily: type.semibold },
   prompt: { color: palette.muted, fontSize: 14, paddingTop: 6, paddingBottom: 2 },
   tool: {
     flexDirection: 'row',
@@ -105,6 +105,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  toolName: { flex: 1, color: palette.foreground, fontSize: 15, fontWeight: '700' },
+  toolName: { flex: 1, color: palette.foreground, fontSize: 15, fontFamily: type.semibold },
   pressed: { opacity: 0.85 },
 });

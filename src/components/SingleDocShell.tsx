@@ -5,7 +5,7 @@ import * as React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { palette } from '@/lib/brand';
+import { palette, type } from '@/lib/brand';
 import { formatBytes } from '@/lib/files';
 import type { SingleDocState } from '@/lib/useSingleDoc';
 import { BrandButton, BusyNote, ErrorNote, PrivacyBadge, SuccessCard } from '@/components/ui';
@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
     backgroundColor: palette.brandSoft,
     marginBottom: 4,
   },
-  pickerText: { color: palette.foreground, fontWeight: '800', fontSize: 17 },
+  pickerText: { color: palette.foreground, fontFamily: type.display, fontSize: 17 },
   pickerSub: { color: palette.muted, fontSize: 12 },
   pressed: { opacity: 0.85 },
   fileRow: {
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(248, 113, 113, 0.12)',
   },
   fileBody: { flex: 1, gap: 2 },
-  fileName: { color: palette.foreground, fontSize: 14, fontWeight: '600' },
+  fileName: { color: palette.foreground, fontSize: 14, fontFamily: type.semibold },
   fileMeta: { color: palette.muted, fontSize: 12 },
   resetBtn: {
     height: 36,

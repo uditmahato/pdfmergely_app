@@ -7,7 +7,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Alert, FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { palette } from '@/lib/brand';
+import { LinearGradient } from 'expo-linear-gradient';
+import { brandGlow, brandGradient, palette, radius, type } from '@/lib/brand';
 import { formatBytes, pickPdfs, readBytes } from '@/lib/files';
 import { docUri, listDocs, saveDoc, type DocEntry } from '@/lib/library';
 import { probe } from '@/core/engine/merge';
@@ -150,8 +151,15 @@ export default function DocsScreen() {
           android_ripple={{ color: 'rgba(255, 255, 255, 0.15)', foreground: true }}
           style={({ pressed }) => [styles.fab, pressed && styles.fabPressed, busy && styles.fabBusy]}
         >
-          <Ionicons name="camera" size={22} color="#ffffff" />
-          <Text style={styles.fabLabel}>{busy ? 'Working…' : 'Scan'}</Text>
+          <LinearGradient
+            colors={[...brandGradient]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.fabInner}
+          >
+            <Ionicons name="camera" size={22} color="#ffffff" />
+            <Text style={styles.fabLabel}>{busy ? 'Working…' : 'Scan'}</Text>
+          </LinearGradient>
         </Pressable>
       </View>
     </View>
@@ -164,20 +172,30 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    backgroundColor: palette.surface2,
-    borderColor: palette.border,
+    gap: 14,
+    backgroundColor: palette.surface3,
+    borderColor: palette.borderSoft,
     borderWidth: 1,
-    borderRadius: 14,
-    padding: 10,
+    borderRadius: radius.lg,
+    padding: 12,
     overflow: 'hidden',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.35,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
   },
   pressed: { opacity: 0.9 },
   cover: {
-    height: 56,
-    width: 44,
-    borderRadius: 8,
+    height: 58,
+    width: 45,
+    borderRadius: 7,
     backgroundColor: '#ffffff',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
   },
   coverFallback: {
     alignItems: 'center',
@@ -185,50 +203,60 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(248, 113, 113, 0.12)',
   },
   rowBody: { flex: 1, gap: 3 },
-  rowName: { color: palette.foreground, fontSize: 15, fontWeight: '700' },
-  rowMeta: { color: palette.muted, fontSize: 12 },
+  rowName: { color: palette.foreground, fontSize: 15, fontFamily: type.semibold },
+  rowMeta: { color: palette.muted, fontSize: 12, fontFamily: type.regular },
   empty: { alignItems: 'center', gap: 8, paddingVertical: 60, paddingHorizontal: 24 },
   emptyIcon: {
-    height: 72,
-    width: 72,
-    borderRadius: 22,
+    height: 76,
+    width: 76,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: palette.brandSoft,
     marginBottom: 6,
+    ...brandGlow,
+    shadowOpacity: 0.2,
   },
-  emptyTitle: { color: palette.foreground, fontSize: 17, fontWeight: '800' },
-  emptyText: { color: palette.muted, fontSize: 13, lineHeight: 19, textAlign: 'center' },
+  emptyTitle: { color: palette.foreground, fontSize: 18, fontFamily: type.display },
+  emptyText: {
+    color: palette.muted,
+    fontSize: 13,
+    lineHeight: 19,
+    textAlign: 'center',
+    fontFamily: type.regular,
+  },
   fabColumn: { position: 'absolute', right: 20, alignItems: 'flex-end', gap: 10 },
   fab: {
+    borderRadius: radius.lg,
+    overflow: 'hidden',
+    ...brandGlow,
+  },
+  fabInner: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: palette.brandStrong,
-    borderRadius: 16,
-    paddingHorizontal: 22,
+    paddingHorizontal: 24,
     paddingVertical: 15,
-    overflow: 'hidden',
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
   },
   miniFab: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: palette.surface2,
+    backgroundColor: palette.surface3,
     borderColor: palette.border,
     borderWidth: 1,
-    borderRadius: 13,
+    borderRadius: radius.md,
     paddingHorizontal: 14,
     paddingVertical: 10,
     overflow: 'hidden',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
   },
-  miniFabLabel: { color: palette.foreground, fontSize: 13, fontWeight: '700' },
+  miniFabLabel: { color: palette.foreground, fontSize: 13, fontFamily: type.semibold },
   fabPressed: { transform: [{ scale: 0.97 }] },
   fabBusy: { opacity: 0.7 },
-  fabLabel: { color: '#ffffff', fontSize: 15, fontWeight: '800' },
+  fabLabel: { color: '#ffffff', fontSize: 15, fontFamily: type.bold },
 });
