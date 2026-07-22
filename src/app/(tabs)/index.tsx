@@ -5,14 +5,22 @@
 import * as React from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import DocumentScanner from 'react-native-document-scanner-plugin';
 import { palette } from '@/lib/brand';
 import { formatBytes, pickPdfs, readBytes } from '@/lib/files';
+import { imagesToPdf } from '@/lib/imagesToPdf';
 import { docUri, listDocs, saveDoc, type DocEntry } from '@/lib/library';
 import { probe } from '@/core/engine/merge';
 import { generateCoverThumb } from '@/lib/thumbs';
 import { PrivacyBadge } from '@/components/ui';
+
+function scanName(): string {
+  const d = new Date();
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `Scan ${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}.${p(d.getMinutes())}.pdf`;
+}
 
 function Cover({ entry }: { entry: DocEntry }) {
   const [uri, setUri] = React.useState<string | null>(null);
@@ -66,6 +74,29 @@ export default function DocsScreen() {
     }
   }
 
+  // The CamScanner moment, minus CamScanner: ML Kit's scanner runs entirely
+  // on-device in a Play-services activity (edge detection, crop, filters,
+  // multi-page), we build the PDF in JS, and it lands in the local library.
+  async function scan() {
+    setBusy(true);
+    try {
+      const res = await DocumentScanner.scanDocument({});
+      const images = res.scannedImages ?? [];
+      if (res.status !== 'success' || images.length === 0) return; // cancelled
+      const bytes = await imagesToPdf(images);
+      const entry = saveDoc(bytes, scanName(), { pages: images.length, source: 'scan' });
+      refresh();
+      router.push(`/doc/${entry.id}` as never);
+    } catch {
+      Alert.alert(
+        'Scanner unavailable',
+        'The on-device scanner needs Google Play services. You can still import PDFs or photos.',
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <View style={styles.screen}>
       <FlatList
@@ -109,22 +140,30 @@ export default function DocsScreen() {
         }
       />
 
-      <Pressable
-        onPress={() => void importPdfs()}
-        disabled={busy}
-        accessibilityRole="button"
-        accessibilityLabel="Import PDFs into your library"
-        android_ripple={{ color: 'rgba(255, 255, 255, 0.15)', foreground: true }}
-        style={({ pressed }) => [
-          styles.fab,
-          { bottom: insets.bottom + 20 },
-          pressed && styles.fabPressed,
-          busy && styles.fabBusy,
-        ]}
-      >
-        <Ionicons name="add" size={22} color="#ffffff" />
-        <Text style={styles.fabLabel}>{busy ? 'Importing…' : 'Import PDF'}</Text>
-      </Pressable>
+      <View style={[styles.fabColumn, { bottom: insets.bottom + 20 }]}>
+        <Pressable
+          onPress={() => void importPdfs()}
+          disabled={busy}
+          accessibilityRole="button"
+          accessibilityLabel="Import PDFs into your library"
+          android_ripple={{ color: 'rgba(255, 255, 255, 0.1)', foreground: true }}
+          style={({ pressed }) => [styles.miniFab, pressed && styles.fabPressed, busy && styles.fabBusy]}
+        >
+          <Ionicons name="document-attach-outline" size={16} color={palette.foreground} />
+          <Text style={styles.miniFabLabel}>Import</Text>
+        </Pressable>
+        <Pressable
+          onPress={() => void scan()}
+          disabled={busy}
+          accessibilityRole="button"
+          accessibilityLabel="Scan a document with the camera"
+          android_ripple={{ color: 'rgba(255, 255, 255, 0.15)', foreground: true }}
+          style={({ pressed }) => [styles.fab, pressed && styles.fabPressed, busy && styles.fabBusy]}
+        >
+          <Ionicons name="camera" size={22} color="#ffffff" />
+          <Text style={styles.fabLabel}>{busy ? 'Working…' : 'Scan'}</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -170,15 +209,14 @@ const styles = StyleSheet.create({
   },
   emptyTitle: { color: palette.foreground, fontSize: 17, fontWeight: '800' },
   emptyText: { color: palette.muted, fontSize: 13, lineHeight: 19, textAlign: 'center' },
+  fabColumn: { position: 'absolute', right: 20, alignItems: 'flex-end', gap: 10 },
   fab: {
-    position: 'absolute',
-    right: 20,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     backgroundColor: palette.brandStrong,
     borderRadius: 16,
-    paddingHorizontal: 20,
+    paddingHorizontal: 22,
     paddingVertical: 15,
     overflow: 'hidden',
     elevation: 6,
@@ -187,6 +225,19 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
   },
+  miniFab: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: palette.surface2,
+    borderColor: palette.border,
+    borderWidth: 1,
+    borderRadius: 13,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    overflow: 'hidden',
+  },
+  miniFabLabel: { color: palette.foreground, fontSize: 13, fontWeight: '700' },
   fabPressed: { transform: [{ scale: 0.97 }] },
   fabBusy: { opacity: 0.7 },
   fabLabel: { color: '#ffffff', fontSize: 15, fontWeight: '800' },
